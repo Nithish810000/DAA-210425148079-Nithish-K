@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interpolation Search Visualizer</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div class="eyebrow">ALGORITHM LAB</div>
+      <h1>Interpolation Search</h1>
+      <p>See how the algorithm estimates where your value lives, then compare it with binary search.</p>
+    </header>
+
+    <section class="card controls" aria-labelledby="try-title">
+      <div class="section-heading">
+        <div><span class="step">01</span><h2 id="try-title">Try a search</h2></div>
+        <button id="resetBtn" class="text-btn" type="button">Reset example</button>
+      </div>
+      <label for="arrayInput">Sorted array</label>
+      <textarea id="arrayInput" rows="3" spellcheck="false">2, 5, 10, 15, 23, 35, 48, 60, 75, 90, 105, 120</textarea>
+      <div class="field-row">
+        <div class="field">
+          <label for="targetInput">Target value</label>
+          <input id="targetInput" type="number" value="35">
+        </div>
+        <button id="searchBtn" class="primary" type="button">Run search <span>→</span></button>
+      </div>
+      <p id="error" class="error" role="alert"></p>
+    </section>
+
+    <section class="card result" aria-labelledby="result-title">
+      <div class="section-heading"><div><span class="step">02</span><h2 id="result-title">Search result</h2></div></div>
+      <div id="arrayTrack" class="array-track" aria-live="polite"></div>
+      <div class="stats">
+        <div><span>Status</span><strong id="status">Ready</strong></div>
+        <div><span>Index</span><strong id="index">—</strong></div>
+        <div><span>Comparisons</span><strong id="comparisons">—</strong></div>
+        <div><span>Estimated position</span><strong id="position">—</strong></div>
+      </div>
+      <div id="trace" class="trace"></div>
+    </section>
+
+    <section class="card benchmark" aria-labelledby="benchmark-title">
+      <div class="section-heading">
+        <div><span class="step">03</span><h2 id="benchmark-title">Performance analysis</h2></div>
+        <button id="benchmarkBtn" class="secondary" type="button">Run benchmark</button>
+      </div>
+      <p class="hint">Average of 100 searches on uniformly distributed sorted data. Browser timing naturally varies.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Size</th><th>IS time</th><th>BS time</th><th>IS comparisons</th><th>BS comparisons</th></tr></thead>
+          <tbody id="benchmarkBody"><tr><td colspan="5" class="empty">Run the benchmark to generate results</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
