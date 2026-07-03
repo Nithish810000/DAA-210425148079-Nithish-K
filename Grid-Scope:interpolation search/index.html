@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Smart-meter time-series search and algorithm comparison dashboard">
+  <title>GridScope — Smart Meter Search Lab</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to dashboard</a>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="GridScope home"><span class="brand-mark">G</span><span>GridScope</span></a>
+    <div class="live"><span aria-hidden="true"></span> Simulation online</div>
+  </header>
+
+  <main id="main" class="shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">SMART METER · SEARCH LAB</p>
+        <h1>Find a reading.<br><em>See the algorithm think.</em></h1>
+        <p class="intro">Explore 30 days of energy readings, compare search strategies, and expose what happens when timestamps stop behaving nicely.</p>
+      </div>
+      <div class="dataset-card" aria-label="Dataset controls">
+        <div class="segmented" role="group" aria-label="Timestamp distribution">
+          <button class="segment active" data-mode="uniform">Regular intervals</button>
+          <button class="segment" data-mode="irregular">Irregular gaps</button>
+        </div>
+        <div class="dataset-meta"><span><strong id="readingCount">10,080</strong> readings</span><span><strong id="rangeDays">30</strong> days</span></div>
+        <div class="actions">
+          <button id="regenerate" class="secondary">Regenerate data</button>
+          <label class="secondary file-label">Import CSV<input id="csvInput" type="file" accept=".csv,text/csv"></label>
+          <button id="exportCsv" class="icon-button" aria-label="Export readings as CSV" title="Export CSV">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 15v4h14v-4"/></svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="search-panel" aria-labelledby="search-title">
+      <div class="search-copy"><p class="eyebrow">TIMESTAMP LOOKUP</p><h2 id="search-title">Search the meter timeline</h2><p>Exact matches are returned when possible; otherwise the closest reading wins.</p></div>
+      <form id="searchForm" class="search-form">
+        <label for="targetTime">Target date &amp; time</label>
+        <div class="input-row"><input id="targetTime" type="datetime-local" step="60" required><button type="submit">Run search <span aria-hidden="true">→</span></button></div>
+        <p id="rangeHelp" class="helper"></p>
+      </form>
+    </section>
+
+    <section id="resultSection" class="result-grid" aria-live="polite">
+      <article class="card reading-card">
+        <div class="card-heading"><div><p class="eyebrow">CLOSEST READING</p><h2 id="resultTime">—</h2></div><span id="matchBadge" class="badge">READY</span></div>
+        <div class="reading-value"><strong id="resultKwh">—</strong><span>kW</span></div>
+        <div class="mini-stats"><div><span>Offset</span><strong id="resultOffset">—</strong></div><div><span>Index</span><strong id="resultIndex">—</strong></div><div><span>Cost / hr</span><strong id="resultCost">—</strong></div></div>
+      </article>
+      <article class="card comparison-card">
+        <div class="card-heading"><div><p class="eyebrow">ALGORITHM RACE</p><h2>Search performance</h2></div><span class="benchmark-note">median of 1,000 runs</span></div>
+        <div class="algo-row interpolation"><div class="algo-name"><span class="dot"></span><div><strong>Interpolation</strong><small>position estimate</small></div></div><div class="metric"><strong id="iTime">—</strong><span>time</span></div><div class="metric"><strong id="iProbes">—</strong><span>probes</span></div><div class="metric"><strong id="iMemory">—</strong><span>memory</span></div></div>
+        <div class="algo-row binary"><div class="algo-name"><span class="dot"></span><div><strong>Binary</strong><small>middle split</small></div></div><div class="metric"><strong id="bTime">—</strong><span>time</span></div><div class="metric"><strong id="bProbes">—</strong><span>probes</span></div><div class="metric"><strong id="bMemory">—</strong><span>memory</span></div></div>
+        <p id="raceInsight" class="insight">Run a search to compare both strategies on identical data.</p>
+      </article>
+    </section>
+
+    <section class="card chart-card">
+      <div class="card-heading"><div><p class="eyebrow">CONSUMPTION TRACE</p><h2>Power demand over time</h2></div><div class="legend"><span><i class="line-key"></i>Demand</span><span><i class="point-key"></i>Selected reading</span></div></div>
+      <div class="chart-wrap"><canvas id="usageChart" role="img" aria-label="Line chart of smart meter power demand"></canvas><div id="chartTooltip" class="tooltip" hidden></div></div>
+      <p id="chartSummary" class="sr-only"></p>
+    </section>
+
+    <section class="lower-grid">
+      <article class="card daily-card">
+        <div class="card-heading"><div><p class="eyebrow">DAILY SUMMARY</p><h2>Recent energy profile</h2></div><span>last 7 days</span></div>
+        <div class="table-wrap"><table><thead><tr><th>Date</th><th>Energy</th><th>Peak</th><th>Avg. demand</th></tr></thead><tbody id="dailyBody"></tbody></table></div>
+      </article>
+      <article class="card lesson-card">
+        <p class="eyebrow">WHY DISTRIBUTION MATTERS</p><h2 id="lessonTitle">Interpolation thrives on regular data.</h2>
+        <div class="distribution-visual" id="distributionVisual" aria-hidden="true"></div>
+        <p id="lessonCopy">With evenly spaced timestamps, it can estimate where the target lives and often jump there in very few probes.</p>
+        <button id="toggleLesson" class="text-button">Switch to irregular data <span aria-hidden="true">→</span></button>
+      </article>
+    </section>
+  </main>
+  <footer><span>GridScope · Algorithm Analysis Project</span><span>All data generated locally in your browser</span></footer>
+  <script src="app.js"></script>
+</body>
+</html>
