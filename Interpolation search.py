@@ -32,6 +32,7 @@ def interpolation_search(arr, target):
    return -1, comparisons
  
 def binary_search(arr, target):
+   """Binary Search for comparison"""
    low, high = 0, len(arr) - 1
    comparisons = 0
    while low <= high:
@@ -70,6 +71,7 @@ def performance_analysis():
        print(f"{size:>10} {is_time:>14.4f} {bs_time:>14.4f} "
              f"{comp_is:>16} {comp_bs:>16}")
  
+# --- Main ---
 arr = [2, 5, 10, 15, 23, 35, 48, 60, 75, 90, 105, 120]
 target = 35
 idx, comps = interpolation_search(arr, target)
