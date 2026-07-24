@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Interactive minimum spanning tree visualizer comparing Kruskal's and Prim's algorithms.">
+  <meta name="theme-color" content="#10231c">
+  <title>MST Lab — Kruskal vs Prim</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <nav class="nav" aria-label="Main navigation">
+    <a class="brand" href="#top"><span class="brand-icon">M</span><span>MST LAB</span></a>
+    <div class="nav-links">
+      <a href="#visualizer">Visualizer</a>
+      <a href="#compare">Compare</a>
+      <a href="#code">Python</a>
+    </div>
+    <a class="nav-action" href="#visualizer">Run the graph <span>↘</span></a>
+  </nav>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow"><span>DESIGN &amp; ANALYSIS OF ALGORITHMS</span><b>GRAPH / MST</b></p>
+        <h1>Connect every node.<br><em>Spend the least.</em></h1>
+        <p class="hero-text">Watch Kruskal and Prim construct the same minimum spanning tree—one edge decision at a time.</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#visualizer">Explore the graph <span>↓</span></a>
+          <a class="button button-outline" href="#code">View Python <span>→</span></a>
+        </div>
+        <div class="hero-stats">
+          <div><span>VERTICES</span><strong>7</strong></div>
+          <div><span>EDGES</span><strong>11</strong></div>
+          <div><span>MINIMUM COST</span><strong>39</strong></div>
+        </div>
+      </div>
+
+      <div class="hero-board" aria-label="Minimum spanning tree overview">
+        <div class="board-top"><span>GRAPH_07</span><span>UNDIRECTED / WEIGHTED</span></div>
+        <canvas id="heroCanvas" aria-label="Graph with minimum spanning tree highlighted"></canvas>
+        <div class="board-legend">
+          <span><i class="legend-line all"></i>All edges</span>
+          <span><i class="legend-line mst"></i>Minimum spanning tree</span>
+        </div>
+        <div class="cost-stamp"><span>TOTAL</span><strong>39</strong></div>
+      </div>
+    </section>
+
+    <section class="fact-strip" aria-label="Key algorithm facts">
+      <div><span>KRUSKAL</span><strong>Sorts all edges</strong></div>
+      <div><span>PRIM</span><strong>Grows one tree</strong></div>
+      <div><span>RESULT</span><strong>6 selected edges</strong></div>
+      <div><span>COMPLEXITY</span><strong>O(E log V)</strong></div>
+    </section>
+
+    <section id="visualizer" class="section visualizer-section">
+      <header class="section-heading">
+        <div>
+          <p class="section-label">01 / INTERACTIVE VISUALIZER</p>
+          <h2>Build the tree,<br>step by step.</h2>
+        </div>
+        <p>Switch algorithms, advance one decision at a time, or run the full solution. Green edges belong to the MST; red edges are rejected because they form a cycle.</p>
+      </header>
+
+      <div class="lab">
+        <div class="lab-controls">
+          <div class="algorithm-switch" role="tablist" aria-label="Select MST algorithm">
+            <button class="algorithm-tab active" data-algorithm="kruskal" role="tab" aria-selected="true">Kruskal</button>
+            <button class="algorithm-tab" data-algorithm="prim" role="tab" aria-selected="false">Prim</button>
+          </div>
+          <label class="start-control" id="startControl">
+            <span>START VERTEX</span>
+            <select id="startVertex" aria-label="Prim start vertex">
+              <option value="0">Vertex 0</option><option value="1">Vertex 1</option>
+              <option value="2">Vertex 2</option><option value="3">Vertex 3</option>
+              <option value="4">Vertex 4</option><option value="5">Vertex 5</option>
+              <option value="6">Vertex 6</option>
+            </select>
+          </label>
+          <button id="resetBtn" class="text-button" type="button">Reset</button>
+        </div>
+
+        <div class="lab-body">
+          <div class="graph-panel">
+            <div class="graph-meta">
+              <span>LIVE GRAPH</span>
+              <div><i class="dot current"></i>Current <i class="dot accepted"></i>Accepted <i class="dot rejected"></i>Rejected</div>
+            </div>
+            <canvas id="graphCanvas" aria-label="Interactive graph visualization"></canvas>
+            <div class="transport">
+              <button id="stepBtn" class="step-button" type="button">Next step <span>→</span></button>
+              <button id="playBtn" class="play-button" type="button"><span>▶</span> Auto play</button>
+              <button id="finishBtn" class="finish-button" type="button">Show final MST</button>
+            </div>
+          </div>
+
+          <aside class="trace-panel" aria-live="polite">
+            <div class="trace-header">
+              <span id="traceCounter">STEP 0 / 11</span>
+              <strong id="traceStatus">Ready to begin</strong>
+            </div>
+            <div class="decision-card">
+              <span class="decision-label">CURRENT DECISION</span>
+              <h3 id="decisionTitle">Choose an edge</h3>
+              <p id="decisionText">Kruskal starts by sorting every edge from the smallest weight to the largest.</p>
+            </div>
+            <div class="live-metrics">
+              <div><span>Selected</span><strong id="selectedCount">0 / 6</strong></div>
+              <div><span>Current cost</span><strong id="currentCost">0</strong></div>
+            </div>
+            <div class="edge-list">
+              <div class="edge-list-head"><span>MST EDGES</span><span>WEIGHT</span></div>
+              <div id="selectedEdges" class="edge-list-body"><p>No edges selected yet.</p></div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section id="compare" class="section compare-section">
+      <header class="compare-heading">
+        <div>
+          <p class="section-label">02 / TWO STRATEGIES</p>
+          <h2>Different journeys.<br>Same minimum.</h2>
+        </div>
+        <p>Both are greedy algorithms. Kruskal thinks globally about the lightest remaining edge, while Prim expands locally from the tree it has already built.</p>
+      </header>
+
+      <div class="strategy-grid">
+        <article class="strategy-card kruskal-card">
+          <div class="card-index">01</div>
+          <div class="strategy-art bars-art" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+          <p class="card-tag">EDGE-FIRST</p>
+          <h3>Kruskal’s Algorithm</h3>
+          <p>Sort edges by weight. Add the next lightest edge only when it connects two different components. Union–Find detects cycles efficiently.</p>
+          <dl>
+            <div><dt>Main structure</dt><dd>Union–Find</dd></div>
+            <div><dt>Time</dt><dd>O(E log E)</dd></div>
+            <div><dt>Strong fit</dt><dd>Sparse graphs</dd></div>
+          </dl>
+        </article>
+
+        <article class="strategy-card prim-card">
+          <div class="card-index">02</div>
+          <div class="strategy-art rings-art" aria-hidden="true"><i></i><i></i><i></i></div>
+          <p class="card-tag">VERTEX-FIRST</p>
+          <h3>Prim’s Algorithm</h3>
+          <p>Start from one vertex. Repeatedly choose the cheapest edge that connects the growing tree to a new vertex. A min-heap keeps that choice fast.</p>
+          <dl>
+            <div><dt>Main structure</dt><dd>Min-heap</dd></div>
+            <div><dt>Time</dt><dd>O(E log V)</dd></div>
+            <div><dt>Strong fit</dt><dd>Dense graphs</dd></div>
+          </dl>
+        </article>
+      </div>
+
+      <div class="result-banner">
+        <div><span>SAMPLE GRAPH RESULT</span><strong>Both algorithms produce an MST with cost 39.</strong></div>
+        <div class="result-equation"><span>5 + 5 + 6 + 7 + 7 + 9</span><b>= 39</b></div>
+      </div>
+    </section>
+
+    <section id="code" class="section code-section">
+      <header class="section-heading code-heading">
+        <div>
+          <p class="section-label">03 / PYTHON SOURCE</p>
+          <h2>Inspect the<br>implementation.</h2>
+        </div>
+        <p>The constructor is shown with the valid Python spelling <code>__init__</code>. Choose a tab to study Union–Find, Kruskal, Prim, or the full example.</p>
+      </header>
+
+      <div class="code-window">
+        <div class="code-toolbar">
+          <div class="window-dots" aria-hidden="true"><i></i><i></i><i></i></div>
+          <div class="code-tabs" role="tablist" aria-label="Python code sections">
+            <button class="code-tab active" data-code="union" role="tab" aria-selected="true">union_find.py</button>
+            <button class="code-tab" data-code="kruskal" role="tab" aria-selected="false">kruskal.py</button>
+            <button class="code-tab" data-code="prim" role="tab" aria-selected="false">prim.py</button>
+            <button class="code-tab" data-code="full" role="tab" aria-selected="false">full_program.py</button>
+          </div>
+          <button id="copyBtn" class="copy-button" type="button">Copy code</button>
+        </div>
+        <div class="code-body">
+          <pre id="lineNumbers" aria-hidden="true"></pre>
+          <pre><code id="codeDisplay"></code></pre>
+        </div>
+        <div class="code-footer"><span>Python 3</span><span id="lineCount">0 lines</span></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-logo">M</div>
+    <div><strong>MST Lab</strong><span>Kruskal · Prim · Union–Find</span></div>
+    <p>Design &amp; Analysis of Algorithms</p>
+    <a href="#top">Back to top ↑</a>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
