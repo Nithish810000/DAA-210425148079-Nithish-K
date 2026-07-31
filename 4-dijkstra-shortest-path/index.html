@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Interactive DAA practical for Dijkstra's single-source shortest path algorithm.">
+  <meta name="theme-color" content="#122019">
+  <title>Experiment 2 · Dijkstra Shortest Path</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="../" aria-label="Back to the DAA practicals">
+      <span class="brand-mark">DAA</span>
+      <span>
+        <strong>Algorithm Lab</strong>
+        <small>Interactive practical</small>
+      </span>
+    </a>
+    <div class="experiment-label">
+      <span>EXPERIMENT 02</span>
+      <strong>Greedy graph</strong>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <p class="eyebrow">SINGLE-SOURCE SHORTEST PATH</p>
+        <h1>Dijkstra’s<br><em>Algorithm</em></h1>
+        <p class="hero-copy">
+          Build a non-negative weighted directed graph, choose a source, and reveal
+          the cheapest route to every reachable vertex.
+        </p>
+      </div>
+      <dl class="complexity-card">
+        <div>
+          <dt>Time</dt>
+          <dd>O((V + E) log V)</dd>
+        </div>
+        <div>
+          <dt>Space</dt>
+          <dd>O(V + E)</dd>
+        </div>
+        <div>
+          <dt>Strategy</dt>
+          <dd>Greedy relaxation</dd>
+        </div>
+        <div>
+          <dt>Weights</dt>
+          <dd>Non-negative</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="lab-shell" aria-labelledby="lab-title">
+      <div class="section-heading">
+        <div>
+          <span>01 / BUILD THE GRAPH</span>
+          <h2 id="lab-title">Shortest-path playground</h2>
+        </div>
+        <button class="text-button" id="resetButton" type="button">Reset sample graph</button>
+      </div>
+
+      <div class="workspace">
+        <section class="control-panel" aria-label="Graph controls">
+          <div class="panel-title">
+            <span>INPUT</span>
+            <b>Directed weighted edges</b>
+          </div>
+
+          <form id="edgeForm">
+            <div class="edge-inputs">
+              <label class="field">
+                <span>From</span>
+                <input id="fromInput" type="number" min="0" step="1" placeholder="0" required>
+              </label>
+              <label class="field">
+                <span>To</span>
+                <input id="toInput" type="number" min="0" step="1" placeholder="1" required>
+              </label>
+              <label class="field">
+                <span>Weight</span>
+                <input id="weightInput" type="number" min="0" step="any" placeholder="4" required>
+              </label>
+            </div>
+
+            <p class="form-message" id="formMessage" role="alert" aria-live="polite"></p>
+
+            <button class="secondary-button" type="submit">
+              Add directed edge <b>＋</b>
+            </button>
+          </form>
+
+          <div class="edge-list-wrap">
+            <div class="subheading">
+              <span>CURRENT EDGES</span>
+              <b id="edgeCount">7</b>
+            </div>
+            <div class="edge-list" id="edgeList"></div>
+          </div>
+
+          <div class="run-block">
+            <label class="field">
+              <span>Source vertex</span>
+              <input id="sourceInput" type="number" min="0" step="1" value="0">
+            </label>
+            <button class="primary-button" id="runButton" type="button">
+              Run Dijkstra <b>→</b>
+            </button>
+          </div>
+        </section>
+
+        <section class="result-panel" aria-live="polite">
+          <div class="panel-title">
+            <span>OUTPUT</span>
+            <b id="resultStatus">Ready to calculate</b>
+          </div>
+
+          <div class="metrics">
+            <article>
+              <span>VERTICES</span>
+              <strong id="vertexMetric">6</strong>
+            </article>
+            <article>
+              <span>EDGES</span>
+              <strong id="edgeMetric">7</strong>
+            </article>
+            <article>
+              <span>VISITED</span>
+              <strong id="visitedMetric">—</strong>
+            </article>
+          </div>
+
+          <div class="graph-board" id="graphBoard" aria-label="Graph vertices"></div>
+
+          <div class="result-table-wrap">
+            <h3>Shortest paths</h3>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Vertex</th>
+                    <th>Distance</th>
+                    <th>Path from source</th>
+                  </tr>
+                </thead>
+                <tbody id="resultBody">
+                  <tr><td colspan="3" class="empty-cell">Run Dijkstra to calculate the paths.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="trace-section" aria-labelledby="trace-title">
+      <div class="section-heading">
+        <div>
+          <span>02 / RELAXATION TRACE</span>
+          <h2 id="trace-title">How the result was built</h2>
+        </div>
+      </div>
+      <div class="trace-card">
+        <ol id="traceList">
+          <li class="trace-empty">Run the algorithm to inspect heap visits and successful edge relaxations.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="algorithm-note">
+      <span class="note-number">CORE RULE</span>
+      <code>if dist[u] + weight(u, v) &lt; dist[v]: update dist[v] and parent[v]</code>
+      <p>
+        The smallest tentative distance is selected first. Once a vertex is settled,
+        its best distance cannot improve when every edge weight is non-negative.
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    <span>Design &amp; Analysis of Algorithms</span>
+    <span>Experiment 02 · Dijkstra’s Algorithm</span>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
