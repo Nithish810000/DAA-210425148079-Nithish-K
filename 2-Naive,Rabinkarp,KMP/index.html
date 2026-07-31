@@ -1,62 +1,262 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Interpolation Search Visualizer</title>
+  <meta
+    name="description"
+    content="DAA practical comparing Naive, KMP, and Rabin-Karp string-matching algorithms."
+  >
+  <title>DAA Practical | String Matching Algorithms</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <main class="shell">
-    <header>
-      <div class="eyebrow">ALGORITHM LAB</div>
-      <h1>Interpolation Search</h1>
-      <p>See how the algorithm estimates where your value lives, then compare it with binary search.</p>
-    </header>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="Algorithm Lab home">
+      <span class="brand-mark">AL</span>
+      <span>
+        <strong>Algorithm Lab</strong>
+        <small>Design &amp; Analysis of Algorithms</small>
+      </span>
+    </a>
+    <span class="experiment-label">Experiment 01</span>
+  </header>
 
-    <section class="card controls" aria-labelledby="try-title">
-      <div class="section-heading">
-        <div><span class="step">01</span><h2 id="try-title">Try a search</h2></div>
-        <button id="resetBtn" class="text-btn" type="button">Reset example</button>
-      </div>
-      <label for="arrayInput">Sorted array</label>
-      <textarea id="arrayInput" rows="3" spellcheck="false">2, 5, 10, 15, 23, 35, 48, 60, 75, 90, 105, 120</textarea>
-      <div class="field-row">
-        <div class="field">
-          <label for="targetInput">Target value</label>
-          <input id="targetInput" type="number" value="35">
+  <main id="top">
+    <section class="hero" aria-labelledby="page-title">
+      <div class="hero-copy">
+        <p class="eyebrow">STRING MATCHING · PRACTICAL</p>
+        <h1 id="page-title">Find the pattern.<br><em>Compare the process.</em></h1>
+        <p class="hero-intro">
+          Test the same input with Naive Search, KMP, and Rabin–Karp.
+          Compare match positions, character comparisons, and execution time.
+        </p>
+        <div class="hero-tags" aria-label="Algorithms included">
+          <span>Naive Search</span>
+          <span>Knuth–Morris–Pratt</span>
+          <span>Rabin–Karp</span>
         </div>
-        <button id="searchBtn" class="primary" type="button">Run search <span>→</span></button>
       </div>
-      <p id="error" class="error" role="alert"></p>
+
+      <aside class="objective-card">
+        <p class="card-kicker">OBJECTIVE</p>
+        <p>
+          To implement three string-matching algorithms and compare their
+          search behavior for different text and pattern inputs.
+        </p>
+        <dl>
+          <div>
+            <dt>Input</dt>
+            <dd>Text + pattern</dd>
+          </div>
+          <div>
+            <dt>Output</dt>
+            <dd>Indices + metrics</dd>
+          </div>
+        </dl>
+      </aside>
     </section>
 
-    <section class="card result" aria-labelledby="result-title">
-      <div class="section-heading"><div><span class="step">02</span><h2 id="result-title">Search result</h2></div></div>
-      <div id="arrayTrack" class="array-track" aria-live="polite"></div>
-      <div class="stats">
-        <div><span>Status</span><strong id="status">Ready</strong></div>
-        <div><span>Index</span><strong id="index">—</strong></div>
-        <div><span>Comparisons</span><strong id="comparisons">—</strong></div>
-        <div><span>Estimated position</span><strong id="position">—</strong></div>
-      </div>
-      <div id="trace" class="trace"></div>
-    </section>
-
-    <section class="card benchmark" aria-labelledby="benchmark-title">
+    <section class="workspace" aria-labelledby="workspace-title">
       <div class="section-heading">
-        <div><span class="step">03</span><h2 id="benchmark-title">Performance analysis</h2></div>
-        <button id="benchmarkBtn" class="secondary" type="button">Run benchmark</button>
+        <div>
+          <p class="eyebrow">INTERACTIVE WORKSPACE</p>
+          <h2 id="workspace-title">Run the experiment</h2>
+        </div>
+        <button class="button button-ghost" id="load-sample-button" type="button">
+          Restore sample
+        </button>
       </div>
-      <p class="hint">Average of 100 searches on uniformly distributed sorted data. Browser timing naturally varies.</p>
+
+      <div class="input-panel">
+        <form id="search-form">
+          <div class="field field-wide">
+            <label for="text-input">
+              Text
+              <span id="text-count">16 characters</span>
+            </label>
+            <textarea
+              id="text-input"
+              name="text"
+              rows="3"
+              maxlength="5000"
+              spellcheck="false"
+              required
+            >AABAACAADAABAABA</textarea>
+          </div>
+
+          <div class="field">
+            <label for="pattern-input">
+              Pattern
+              <span id="pattern-count">4 characters</span>
+            </label>
+            <input
+              id="pattern-input"
+              name="pattern"
+              type="text"
+              value="AABA"
+              maxlength="500"
+              spellcheck="false"
+              required
+            >
+          </div>
+
+          <div class="form-actions">
+            <button class="button button-primary" type="submit">
+              <span>Run comparison</span>
+              <span aria-hidden="true">→</span>
+            </button>
+            <button class="button button-secondary" id="add-case-button" type="button">
+              + Add as test case
+            </button>
+          </div>
+          <p class="form-message" id="form-message" role="alert" aria-live="polite"></p>
+        </form>
+      </div>
+
+      <div class="results-region" id="results-region" aria-live="polite">
+        <div class="match-preview">
+          <div class="preview-heading">
+            <div>
+              <p class="card-kicker">MATCH PREVIEW</p>
+              <h3>Occurrences in the text</h3>
+            </div>
+            <span class="match-count" id="match-count">3 matches</span>
+          </div>
+          <div class="text-preview" id="text-preview" aria-label="Text with matches highlighted"></div>
+          <p class="index-note">Highlighted occurrences begin at zero-based indices.</p>
+        </div>
+
+        <div class="result-grid" id="result-grid">
+          <article class="result-card" data-algorithm="naive">
+            <div class="result-number">01</div>
+            <div class="result-title">
+              <h3>Naive Search</h3>
+              <span>O(n × m)</span>
+            </div>
+            <dl>
+              <div>
+                <dt>Match indices</dt>
+                <dd class="result-matches">—</dd>
+              </div>
+              <div>
+                <dt>Comparisons</dt>
+                <dd class="result-comparisons">—</dd>
+              </div>
+              <div>
+                <dt>Runtime</dt>
+                <dd class="result-time">—</dd>
+              </div>
+            </dl>
+          </article>
+
+          <article class="result-card featured" data-algorithm="kmp">
+            <div class="result-number">02</div>
+            <div class="result-title">
+              <h3>KMP Search</h3>
+              <span>O(n + m)</span>
+            </div>
+            <dl>
+              <div>
+                <dt>Match indices</dt>
+                <dd class="result-matches">—</dd>
+              </div>
+              <div>
+                <dt>Comparisons</dt>
+                <dd class="result-comparisons">—</dd>
+              </div>
+              <div>
+                <dt>Runtime</dt>
+                <dd class="result-time">—</dd>
+              </div>
+            </dl>
+          </article>
+
+          <article class="result-card" data-algorithm="rabin-karp">
+            <div class="result-number">03</div>
+            <div class="result-title">
+              <h3>Rabin–Karp</h3>
+              <span>O(n + m) average</span>
+            </div>
+            <dl>
+              <div>
+                <dt>Match indices</dt>
+                <dd class="result-matches">—</dd>
+              </div>
+              <div>
+                <dt>Comparisons</dt>
+                <dd class="result-comparisons">—</dd>
+              </div>
+              <div>
+                <dt>Runtime</dt>
+                <dd class="result-time">—</dd>
+              </div>
+            </dl>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="test-cases" aria-labelledby="test-cases-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">YOUR INPUTS</p>
+          <h2 id="test-cases-title">Saved test cases</h2>
+          <p class="section-description">
+            Add the current input, then run any saved case again with one click.
+          </p>
+        </div>
+        <span class="case-total" id="case-total">1 case</span>
+      </div>
+
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Size</th><th>IS time</th><th>BS time</th><th>IS comparisons</th><th>BS comparisons</th></tr></thead>
-          <tbody id="benchmarkBody"><tr><td colspan="5" class="empty">Run the benchmark to generate results</td></tr></tbody>
+          <thead>
+            <tr>
+              <th scope="col">No.</th>
+              <th scope="col">Text</th>
+              <th scope="col">Pattern</th>
+              <th scope="col">Matches</th>
+              <th scope="col"><span class="sr-only">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody id="test-case-body"></tbody>
         </table>
+      </div>
+      <div class="empty-state" id="empty-state" hidden>
+        No saved cases yet. Enter a text and pattern above, then select
+        <strong>Add as test case</strong>.
+      </div>
+    </section>
+
+    <section class="notes" aria-labelledby="notes-title">
+      <p class="eyebrow">QUICK REFERENCE</p>
+      <h2 id="notes-title">How the algorithms differ</h2>
+      <div class="notes-grid">
+        <article>
+          <span>01</span>
+          <h3>Naive</h3>
+          <p>Checks the pattern at every possible starting position in the text.</p>
+        </article>
+        <article>
+          <span>02</span>
+          <h3>KMP</h3>
+          <p>Uses an LPS table to avoid rechecking characters after a mismatch.</p>
+        </article>
+        <article>
+          <span>03</span>
+          <h3>Rabin–Karp</h3>
+          <p>Uses a rolling hash and compares characters only when hashes match.</p>
+        </article>
       </div>
     </section>
   </main>
-  <script src="app.js"></script>
+
+  <footer>
+    <p>DAA Practical · Experiment 01</p>
+    <p>String Matching Algorithm Comparison</p>
+  </footer>
+
+  <script src="script.js"></script>
 </body>
 </html>
