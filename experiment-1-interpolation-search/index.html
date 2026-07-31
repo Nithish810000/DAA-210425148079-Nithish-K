@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Interactive DAA practical for Interpolation Search and Binary Search comparison.">
+  <meta name="theme-color" content="#111827">
+  <title>Experiment 1 · Interpolation Search</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="../" aria-label="Back to the DAA practicals">
+      <span class="brand-mark">DAA</span>
+      <span>
+        <strong>Algorithm Lab</strong>
+        <small>Interactive practical</small>
+      </span>
+    </a>
+    <div class="experiment-label">
+      <span>EXPERIMENT 01</span>
+      <strong>Searching</strong>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <p class="eyebrow">POSITION-BASED SEARCHING</p>
+        <h1>Interpolation<br><em>Search</em></h1>
+        <p class="hero-copy">
+          Estimate where a value is likely to occur in a sorted array, then compare
+          its probes with Binary Search.
+        </p>
+      </div>
+      <dl class="complexity-card">
+        <div>
+          <dt>Average time</dt>
+          <dd>O(log log n)</dd>
+        </div>
+        <div>
+          <dt>Worst time</dt>
+          <dd>O(n)</dd>
+        </div>
+        <div>
+          <dt>Space</dt>
+          <dd>O(1)</dd>
+        </div>
+        <div>
+          <dt>Requirement</dt>
+          <dd>Sorted array</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="lab-shell" aria-labelledby="lab-title">
+      <div class="section-heading">
+        <div>
+          <span>01 / TRY THE ALGORITHM</span>
+          <h2 id="lab-title">Search playground</h2>
+        </div>
+        <button class="text-button" id="resetButton" type="button">Reset sample</button>
+      </div>
+
+      <div class="workspace">
+        <section class="control-panel" aria-label="Search controls">
+          <div class="panel-title">
+            <span>INPUT</span>
+            <b>Sorted numeric data</b>
+          </div>
+
+          <form id="searchForm">
+            <label class="field">
+              <span>Array values <small>comma or space separated</small></span>
+              <textarea id="arrayInput" rows="4" spellcheck="false">2, 5, 10, 15, 23, 35, 48, 60, 75, 90, 105, 120</textarea>
+            </label>
+
+            <div class="add-row">
+              <label class="field">
+                <span>Add one value</span>
+                <input id="newValueInput" type="number" step="any" placeholder="e.g. 52">
+              </label>
+              <button class="secondary-button" id="addValueButton" type="button">Add value <b>＋</b></button>
+            </div>
+
+            <label class="field">
+              <span>Target value</span>
+              <input id="targetInput" type="number" step="any" value="35" required>
+            </label>
+
+            <p class="form-message" id="formMessage" role="alert" aria-live="polite"></p>
+
+            <button class="primary-button" type="submit">
+              Run Interpolation Search <b>→</b>
+            </button>
+          </form>
+        </section>
+
+        <section class="result-panel" aria-live="polite">
+          <div class="panel-title">
+            <span>OUTPUT</span>
+            <b id="resultStatus">Ready to search</b>
+          </div>
+
+          <div class="metrics">
+            <article>
+              <span>INDEX</span>
+              <strong id="indexMetric">—</strong>
+            </article>
+            <article>
+              <span>COMPARISONS</span>
+              <strong id="comparisonMetric">—</strong>
+            </article>
+            <article>
+              <span>ARRAY SIZE</span>
+              <strong id="sizeMetric">12</strong>
+            </article>
+          </div>
+
+          <div class="array-visual" id="arrayVisual" aria-label="Array visualization"></div>
+
+          <div class="trace-wrap">
+            <h3>Probe trace</h3>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Step</th>
+                    <th>Low</th>
+                    <th>High</th>
+                    <th>Probe</th>
+                    <th>Value</th>
+                    <th>Decision</th>
+                  </tr>
+                </thead>
+                <tbody id="traceBody">
+                  <tr><td colspan="6" class="empty-cell">Run the search to inspect each probe.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="benchmark-section" aria-labelledby="benchmark-title">
+      <div class="section-heading">
+        <div>
+          <span>02 / PERFORMANCE ANALYSIS</span>
+          <h2 id="benchmark-title">Interpolation vs Binary</h2>
+        </div>
+        <button class="primary-button compact" id="benchmarkButton" type="button">
+          Run comparison <b>↗</b>
+        </button>
+      </div>
+      <p class="section-note">
+        Each result is the average of 100 searches on a uniformly distributed sorted array.
+        Browser timings vary by device.
+      </p>
+      <div class="benchmark-card">
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Size</th>
+                <th>IS time (ms)</th>
+                <th>BS time (ms)</th>
+                <th>IS comparisons</th>
+                <th>BS comparisons</th>
+              </tr>
+            </thead>
+            <tbody id="benchmarkBody">
+              <tr><td colspan="5" class="empty-cell">Select “Run comparison” to generate results.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="algorithm-note">
+      <span class="note-number">FORMULA</span>
+      <code>pos = low + ((target − arr[low]) × (high − low)) ÷ (arr[high] − arr[low])</code>
+      <p>
+        Unlike Binary Search, Interpolation Search uses the target’s relative value
+        to estimate the next probe position.
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    <span>Design &amp; Analysis of Algorithms</span>
+    <span>Experiment 01 · Interpolation Search</span>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
