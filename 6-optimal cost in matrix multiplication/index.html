@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="An interactive dynamic-programming visualizer for Matrix Chain Multiplication.">
+  <meta name="theme-color" content="#07111f">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='32' fill='%236ee7d8'/%3E%3Ctext x='32' y='38' text-anchor='middle' font-family='monospace' font-size='17' font-weight='700' fill='%2307111f'%3EM%C3%97M%3C/text%3E%3C/svg%3E">
+  <title>Matrix Chain Lab — Optimal Multiplication Cost</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to the calculator</a>
+
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="Matrix Chain Lab home">
+      <span class="brand-mark" aria-hidden="true">M×M</span>
+      <span class="brand-copy">
+        <strong>Matrix Chain Lab</strong>
+        <small>Dynamic programming, made visible</small>
+      </span>
+    </a>
+
+    <nav class="header-nav" aria-label="Page navigation">
+      <a href="#calculator">Calculator</a>
+      <a href="#tables">DP tables</a>
+      <a href="#method">Method</a>
+    </nav>
+
+    <div class="complexity-pill" aria-label="Complexity: order n cubed time and order n squared space">
+      <span>TIME <b>O(n³)</b></span>
+      <i aria-hidden="true"></i>
+      <span>SPACE <b>O(n²)</b></span>
+    </div>
+  </header>
+
+  <main id="main-content">
+    <section class="hero" id="top" aria-labelledby="hero-title">
+      <div class="hero-grid" aria-hidden="true"></div>
+      <div class="hero-copy">
+        <p class="eyebrow"><span>DP / 01</span> OPTIMAL SUBSTRUCTURE</p>
+        <h1 id="hero-title">Find the cheapest way to <em>multiply a matrix chain.</em></h1>
+        <p class="hero-lead">
+          The order of multiplication changes the work—not the answer. Explore every split,
+          keep only the cheapest subproblems, and see why one parenthesization wins.
+        </p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#calculator">
+            Compute an optimum
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+          <a class="text-link" href="#method">See how it works <span aria-hidden="true">↘</span></a>
+        </div>
+      </div>
+
+      <div class="hero-demo" aria-label="Example matrix chain A1 through A4 with optimal cost 5,000">
+        <div class="demo-topline">
+          <span>EXAMPLE / FOUR MATRICES</span>
+          <span class="status-dot">OPTIMAL</span>
+        </div>
+        <div class="demo-chain">
+          <div class="demo-group">
+            <span class="group-label">LEFT RESULT · 10×5</span>
+            <div class="demo-pair">
+              <div class="matrix-tile"><b>A1</b><small>10 × 30</small></div>
+              <span class="multiply" aria-hidden="true">×</span>
+              <div class="matrix-tile"><b>A2</b><small>30 × 5</small></div>
+            </div>
+          </div>
+          <span class="multiply demo-center" aria-hidden="true">×</span>
+          <div class="demo-group">
+            <span class="group-label">RIGHT RESULT · 5×10</span>
+            <div class="demo-pair">
+              <div class="matrix-tile"><b>A3</b><small>5 × 60</small></div>
+              <span class="multiply" aria-hidden="true">×</span>
+              <div class="matrix-tile"><b>A4</b><small>60 × 10</small></div>
+            </div>
+          </div>
+        </div>
+        <div class="demo-result">
+          <div>
+            <span>MINIMUM SCALAR MULTIPLICATIONS</span>
+            <strong>5,000</strong>
+          </div>
+          <div class="cost-ring" aria-hidden="true"><span>MIN</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="principle-strip" aria-label="Key algorithm facts">
+      <article>
+        <span class="fact-number">01</span>
+        <div><b>Same product</b><small>Every valid grouping returns the same final matrix.</small></div>
+      </article>
+      <article>
+        <span class="fact-number">02</span>
+        <div><b>Different cost</b><small>Intermediate dimensions decide the scalar work.</small></div>
+      </article>
+      <article>
+        <span class="fact-number">03</span>
+        <div><b>One recurrence</b><small>Reuse optimal answers for every smaller chain.</small></div>
+      </article>
+    </section>
+
+    <section class="section calculator-section" id="calculator" aria-labelledby="calculator-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow dark"><span>LAB / 02</span> INTERACTIVE CALCULATOR</p>
+          <h2 id="calculator-title">Build your matrix chain.</h2>
+        </div>
+        <p>Enter the shared dimensions in order. Five numbers describe four compatible matrices.</p>
+      </div>
+
+      <div class="calculator-shell">
+        <form class="input-card" id="mcm-form" novalidate>
+          <div class="card-heading">
+            <div class="card-index">01</div>
+            <div>
+              <span>INPUT</span>
+              <h3>Matrix dimensions</h3>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="dimensions">Dimensions <span aria-hidden="true">*</span></label>
+            <div class="dimension-input-wrap">
+              <span aria-hidden="true">p = [</span>
+              <input
+                id="dimensions"
+                name="dimensions"
+                type="text"
+                inputmode="numeric"
+                value="10, 30, 5, 60, 10"
+                aria-describedby="dimensions-help dimensions-error"
+                aria-invalid="false"
+                autocomplete="off"
+                spellcheck="false"
+              >
+              <span aria-hidden="true">]</span>
+            </div>
+            <p class="field-help" id="dimensions-help">Use 2–13 positive whole numbers, separated by commas or spaces.</p>
+            <p class="field-error" id="dimensions-error" role="alert"></p>
+          </div>
+
+          <div class="example-group">
+            <span>QUICK EXAMPLES</span>
+            <div class="example-buttons" role="group" aria-label="Example dimension sets">
+              <button type="button" class="example-chip active" data-dimensions="10, 30, 5, 60, 10">Four matrices</button>
+              <button type="button" class="example-chip" data-dimensions="30, 35, 15, 5, 10, 20, 25">CLRS classic</button>
+              <button type="button" class="example-chip" data-dimensions="10, 10, 10, 10">Equal sizes</button>
+            </div>
+          </div>
+
+          <div class="matrix-preview-block">
+            <div class="preview-heading">
+              <span>PARSED CHAIN</span>
+              <strong id="matrix-count">4 matrices</strong>
+            </div>
+            <div class="matrix-preview" id="matrix-preview" aria-live="polite"></div>
+          </div>
+
+          <button class="button button-compute" type="submit">
+            <span>Compute optimum</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </button>
+        </form>
+
+        <section class="result-card" aria-labelledby="result-title" aria-live="polite">
+          <div class="result-orbit" aria-hidden="true"></div>
+          <div class="card-heading light">
+            <div class="card-index">02</div>
+            <div>
+              <span>OUTPUT</span>
+              <h3 id="result-title">Optimal result</h3>
+            </div>
+            <span class="computed-badge" id="computed-badge">COMPUTED</span>
+          </div>
+
+          <div class="primary-result">
+            <span>MINIMUM SCALAR MULTIPLICATIONS</span>
+            <strong id="minimum-cost">5,000</strong>
+            <small id="result-context">for a chain of 4 matrices</small>
+          </div>
+
+          <div class="expression-panel">
+            <div class="expression-label">
+              <span>OPTIMAL PARENTHESIZATION</span>
+              <button class="icon-button" type="button" id="copy-result" aria-label="Copy optimal parenthesization" title="Copy result">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>
+              </button>
+            </div>
+            <code id="optimal-expression">((A1 × A2) × (A3 × A4))</code>
+          </div>
+
+          <div class="result-metrics">
+            <div>
+              <span>LEFT-TO-RIGHT COST</span>
+              <strong id="ltr-cost">10,500</strong>
+            </div>
+            <div>
+              <span>WORK AVOIDED</span>
+              <strong id="saved-cost">5,500</strong>
+            </div>
+            <div>
+              <span>SAVINGS</span>
+              <strong id="savings-percent">52.4%</strong>
+            </div>
+          </div>
+
+          <p class="result-insight" id="result-insight">
+            Multiply A1 with A2 and A3 with A4 first, then combine the two smaller results.
+          </p>
+        </section>
+      </div>
+    </section>
+
+    <section class="section chain-section" aria-labelledby="chain-title">
+      <div class="section-heading compact">
+        <div>
+          <p class="eyebrow dark"><span>VIEW / 03</span> DIMENSION FLOW</p>
+          <h2 id="chain-title">The compatible chain.</h2>
+        </div>
+        <div class="legend" aria-label="Visualization legend">
+          <span><i class="legend-dot matrix"></i>Matrix</span>
+          <span><i class="legend-dot shared"></i>Shared dimension</span>
+        </div>
+      </div>
+      <div class="chain-visualization" id="chain-visualization" aria-live="polite"></div>
+    </section>
+
+    <section class="section execution-section" id="execution" aria-labelledby="execution-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow dark"><span>PLAN / 04</span> WINNING EXECUTION</p>
+          <h2 id="execution-title">Perform the cheapest operations.</h2>
+        </div>
+        <p>Read the optimal tree from its leaves upward. Each result becomes an input to the next operation.</p>
+      </div>
+      <div class="execution-grid" id="execution-grid"></div>
+    </section>
+
+    <section class="section tables-section" id="tables" aria-labelledby="tables-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow dark"><span>DATA / 05</span> DYNAMIC PROGRAMMING TABLES</p>
+          <h2 id="tables-title">Every subproblem, stored once.</h2>
+        </div>
+        <p>The cost table stores the minimum work. The split table remembers the winning divider <em>k</em>.</p>
+      </div>
+
+      <div class="table-card">
+        <div class="table-toolbar">
+          <div class="table-tabs" role="tablist" aria-label="Dynamic programming tables">
+            <button type="button" role="tab" id="cost-tab" aria-controls="cost-panel" aria-selected="true">Cost table <span>m[i, j]</span></button>
+            <button type="button" role="tab" id="split-tab" aria-controls="split-panel" aria-selected="false" tabindex="-1">Split table <span>s[i, j]</span></button>
+          </div>
+          <div class="table-key"><i></i> Final optimum</div>
+        </div>
+
+        <div class="tab-panel" id="cost-panel" role="tabpanel" aria-labelledby="cost-tab">
+          <div class="table-scroll" id="cost-table-container"></div>
+        </div>
+        <div class="tab-panel" id="split-panel" role="tabpanel" aria-labelledby="split-tab" hidden>
+          <div class="table-scroll" id="split-table-container"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section comparison-section" aria-labelledby="comparison-title">
+      <div class="comparison-layout">
+        <div class="comparison-copy">
+          <p class="eyebrow"><span>PROOF / 06</span> FINAL SPLIT COMPARISON</p>
+          <h2 id="comparison-title">Why this split wins.</h2>
+          <p>For the full chain, dynamic programming tries every position <em>k</em>. The shortest bar is the selected cost.</p>
+          <div class="winner-callout" id="winner-callout"></div>
+        </div>
+        <div class="bar-chart" id="final-split-chart" role="img" aria-label="Comparison of candidate costs for the full matrix chain"></div>
+      </div>
+    </section>
+
+    <section class="section trace-section" aria-labelledby="trace-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow dark"><span>TRACE / 07</span> SUBPROBLEM EXPLORER</p>
+          <h2 id="trace-title">Inspect every candidate split.</h2>
+        </div>
+        <p>Open a subproblem to compare its candidate totals. The winning row becomes the value stored in the DP table.</p>
+      </div>
+      <div class="trace-grid" id="trace-grid"></div>
+      <p class="trace-note" id="trace-note" hidden></p>
+    </section>
+
+    <section class="section method-section" id="method" aria-labelledby="method-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow dark"><span>METHOD / 08</span> THE RECURRENCE</p>
+          <h2 id="method-title">From brute force to a table.</h2>
+        </div>
+        <p>Longer chains depend only on shorter chains, so we solve by increasing chain length.</p>
+      </div>
+
+      <div class="method-grid">
+        <article class="formula-card">
+          <span class="formula-kicker">CORE RECURRENCE</span>
+          <div class="formula">
+            <span>m[i, j] =</span>
+            <strong>min</strong>
+            <small>i ≤ k &lt; j</small>
+            <span>{ m[i, k] + m[k+1, j] + p<sub>i−1</sub>p<sub>k</sub>p<sub>j</sub> }</span>
+          </div>
+          <p>The first two terms reuse solved subchains. The last term is the cost of multiplying their resulting matrices.</p>
+        </article>
+
+        <ol class="method-steps">
+          <li><span>01</span><div><b>Initialize the diagonal</b><p>A single matrix needs zero multiplications, so m[i, i] = 0.</p></div></li>
+          <li><span>02</span><div><b>Grow the chain length</b><p>Solve chains of length 2, then 3, continuing to the full chain.</p></div></li>
+          <li><span>03</span><div><b>Try every split k</b><p>Combine the best left and right costs with the final multiplication cost.</p></div></li>
+          <li><span>04</span><div><b>Keep the minimum</b><p>Store its cost in m and its split position in s for reconstruction.</p></div></li>
+        </ol>
+      </div>
+
+      <div class="complexity-grid">
+        <article><span>TIME</span><strong>O(n³)</strong><p>Chain length × starting index × split position.</p></article>
+        <article><span>SPACE</span><strong>O(n²)</strong><p>Two triangular n × n tables for costs and splits.</p></article>
+        <article><span>PROPERTY</span><strong>Optimal</strong><p>Every chosen subchain must itself have the lowest possible cost.</p></article>
+      </div>
+    </section>
+
+    <section class="section code-section" aria-labelledby="code-title">
+      <div class="section-heading on-dark">
+        <div>
+          <p class="eyebrow"><span>CODE / 09</span> PYTHON REFERENCE</p>
+          <h2 id="code-title">The implementation behind the visual.</h2>
+        </div>
+        <p>The same bottom-up recurrence used by the calculator, written in Python.</p>
+      </div>
+
+      <div class="code-window">
+        <div class="code-toolbar">
+          <div><i></i><i></i><i></i><span>matrix_chain.py</span></div>
+          <button type="button" id="copy-code">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>
+            <span>Copy code</span>
+          </button>
+        </div>
+        <pre class="code-scroll"><code id="python-code">def matrix_chain_order(dims):
+    """Matrix Chain Multiplication using dynamic programming."""
+    n = len(dims) - 1
+    # m[i][j] = minimum multiplications for matrices i..j
+    m = [[0] * (n + 1) for _ in range(n + 1)]
+    s = [[0] * (n + 1) for _ in range(n + 1)]
+
+    # l is the chain length
+    for l in range(2, n + 1):
+        for i in range(1, n - l + 2):
+            j = i + l - 1
+            m[i][j] = float('inf')
+
+            for k in range(i, j):
+                cost = (
+                    m[i][k]
+                    + m[k + 1][j]
+                    + dims[i - 1] * dims[k] * dims[j]
+                )
+                if cost &lt; m[i][j]:
+                    m[i][j] = cost
+                    s[i][j] = k
+
+    return m, s
+
+
+def optimal_parens(s, i, j):
+    if i == j:
+        return f'A{i}'
+    k = s[i][j]
+    left = optimal_parens(s, i, k)
+    right = optimal_parens(s, k + 1, j)
+    return f'({left} x {right})'
+
+
+dims = [10, 30, 5, 60, 10]
+m, s = matrix_chain_order(dims)
+n = len(dims) - 1
+print('Minimum:', m[1][n])
+print('Order:', optimal_parens(s, 1, n))</code></pre>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div>
+      <span class="brand-mark" aria-hidden="true">M×M</span>
+      <div><strong>Matrix Chain Lab</strong><small>Dynamic Programming Visualizer</small></div>
+    </div>
+    <p>One chain. Every split. The least possible work.</p>
+    <a href="#top">Back to top <span aria-hidden="true">↑</span></a>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+</body>
+</html>
