@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Randomized QuickSort · Efficiency</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+    }
+    body {
+      background: linear-gradient(145deg, #1b2a32 0%, #0f1a1f 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0;
+      padding: 20px;
+    }
+    .card {
+      background: rgba(22, 34, 40, 0.92);
+      backdrop-filter: blur(8px);
+      border-radius: 2.5rem;
+      padding: 2rem 2.2rem 2rem 2.2rem;
+      box-shadow: 0 25px 40px -10px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(120, 180, 200, 0.2);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 100%;
+      width: fit-content;
+    }
+    h1 {
+      font-weight: 500;
+      font-size: 2rem;
+      letter-spacing: 1.5px;
+      margin: 0 0 0.2rem 0;
+      color: #d8e9f0;
+      text-shadow: 0 2px 5px #00000050;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    h1 span {
+      background: #2f4b5c;
+      padding: 0.2rem 0.9rem;
+      border-radius: 60px;
+      font-size: 1rem;
+      font-weight: 400;
+      color: #b3d9e8;
+      border: 1px solid #3f6a80;
+      letter-spacing: 0.5px;
+    }
+    .subhead {
+      color: #8fb1c2;
+      font-size: 0.9rem;
+      margin-bottom: 1.2rem;
+      letter-spacing: 0.5px;
+      text-align: center;
+    }
+    .control-panel {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      margin: 0.3rem 0 1.2rem 0;
+      background: #1e2e36b3;
+      padding: 0.8rem 1.6rem;
+      border-radius: 60px;
+      border: 1px solid #38515e;
+    }
+    .control-panel label {
+      color: #c2dae6;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+    .control-panel input {
+      width: 70px;
+      padding: 8px 10px;
+      border-radius: 30px;
+      border: 1px solid #385f73;
+      background: #0d1a20;
+      color: #e5f0f5;
+      font-weight: 600;
+      text-align: center;
+      font-size: 0.95rem;
+      outline: none;
+      transition: 0.2s;
+      box-shadow: inset 0 2px 5px #00000055;
+    }
+    .control-panel input:focus {
+      border-color: #5da1c0;
+      box-shadow: 0 0 0 2px #3e7b9650, inset 0 2px 5px #000;
+    }
+    .control-panel button {
+      background: #2e566b;
+      border: none;
+      border-radius: 40px;
+      padding: 8px 18px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      letter-spacing: 0.5px;
+      color: #eef7fc;
+      cursor: pointer;
+      transition: 0.15s;
+      box-shadow: 0 5px 0 #0d1a20, 0 8px 12px #00000040;
+      border: 1px solid #4d7e97;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .control-panel button:hover {
+      background: #3c6d88;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 0 #0d1a20, 0 10px 16px #00000050;
+    }
+    .control-panel button:active {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 #0d1a20, 0 5px 10px #00000040;
+    }
+    .control-panel button.active {
+      background: #4a7e9c;
+      border-color: #7fb5d0;
+      box-shadow: 0 5px 0 #0d1a20, 0 8px 12px #00000040, 0 0 0 2px #6fb0d0;
+    }
+    .array-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 5px 0 8px 0;
+      width: 100%;
+    }
+    .array-title {
+      color: #aac7d6;
+      font-size: 0.9rem;
+      letter-spacing: 0.8px;
+      margin-bottom: 10px;
+      font-weight: 500;
+    }
+    .array-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: flex-end;
+      gap: 6px;
+      background: #0a1419;
+      padding: 18px 20px;
+      border-radius: 24px;
+      box-shadow: inset 0 0 16px #000000, 0 12px 24px -8px black;
+      border: 1px solid #1e3e4b;
+      min-height: 180px;
+      width: 100%;
+      box-sizing: border-box;
+      transition: 0.2s;
+    }
+    .bar-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      transition: 0.2s;
+    }
+    .bar {
+      width: 38px;
+      background: linear-gradient(180deg, #4d9e7a, #2d6b52);
+      border-radius: 8px 8px 4px 4px;
+      transition: height 0.25s, background 0.25s, transform 0.15s;
+      box-shadow: 0 4px 8px #00000060, inset 0 1px 0 #ffffff30;
+      position: relative;
+      min-height: 4px;
+      border: 1px solid #3f8a6a;
+    }
+    .bar.pivot {
+      background: linear-gradient(180deg, #f5b042, #d48a1a);
+      box-shadow: 0 0 16px #ffb34780, 0 4px 8px #00000060;
+      border-color: #ffd966;
+      transform: scale(1.05);
+    }
+    .bar.sorted {
+      background: linear-gradient(180deg, #5da1c0, #2e6d8a);
+      border-color: #7fc0dd;
+      box-shadow: 0 0 12px #5da1c060, 0 4px 8px #00000060;
+    }
+    .bar.comparing {
+      background: linear-gradient(180deg, #e57373, #b84a4a);
+      border-color: #ff9a9a;
+      box-shadow: 0 0 14px #e5737380;
+      transform: scale(1.05);
+    }
+    .bar-label {
+      font-size: 0.7rem;
+      color: #b3d9e8;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+    .stats-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 14px;
+      margin: 8px 0 4px 0;
+    }
+    .stat {
+      background: #1a2c34;
+      padding: 6px 16px;
+      border-radius: 40px;
+      border: 1px solid #2d4d5e;
+      color: #cbe2ee;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+    .stat span {
+      color: #ffe484;
+      font-weight: 700;
+    }
+    .result-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 8px;
+      width: 100%;
+    }
+    .status {
+      color: #b6d6e8;
+      font-size: 0.95rem;
+      font-weight: 400;
+      letter-spacing: 0.5px;
+      background: #1a2c34;
+      padding: 10px 28px;
+      border-radius: 40px;
+      border: 1px solid #2d4d5e;
+      margin-top: 6px;
+      min-width: 240px;
+      text-align: center;
+      box-shadow: inset 0 4px 8px #00000030;
+      line-height: 1.5;
+    }
+    .status strong {
+      color: #ffe484;
+      font-weight: 600;
+    }
+    .comparison-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 10px;
+      width: 100%;
+    }
+    .algo-card {
+      background: #14242c;
+      border-radius: 16px;
+      border: 1px solid #2e566b;
+      padding: 10px 18px;
+      min-width: 150px;
+      text-align: center;
+      box-shadow: 0 4px 12px #00000050;
+    }
+    .algo-card h4 {
+      margin: 0 0 4px 0;
+      color: #b3d9e8;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .algo-card .val {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #ffe484;
+    }
+    .algo-card .sub {
+      font-size: 0.7rem;
+      color: #7fa9c0;
+      margin-top: 2px;
+    }
+    .footer {
+      color: #5f7f8e;
+      font-size: 0.78rem;
+      margin-top: 16px;
+      letter-spacing: 0.4px;
+      text-align: center;
+    }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 8px;
+      color: #8fb1c2;
+      font-size: 0.75rem;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .legend-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+    }
+    .legend-dot.normal { background: linear-gradient(180deg, #4d9e7a, #2d6b52); }
+    .legend-dot.pivot { background: linear-gradient(180deg, #f5b042, #d48a1a); }
+    .legend-dot.comparing { background: linear-gradient(180deg, #e57373, #b84a4a); }
+    .legend-dot.sorted { background: linear-gradient(180deg, #5da1c0, #2e6d8a); }
+  </style>
+</head>
+<body>
+<div class="card">
+  <h1>⚡ Randomized QuickSort <span>efficiency</span></h1>
+  <div class="subhead">random pivot selection avoids worst-case O(n²) on sorted inputs</div>
+
+  <div class="control-panel">
+    <label for="arraySize">Size:</label>
+    <input type="number" id="arraySize" min="5" max="30" value="12" step="1">
+    <button id="randomArrayBtn">🎲 Random</button>
+    <button id="sortedArrayBtn">📈 Sorted</button>
+    <button id="reverseArrayBtn">📉 Reverse</button>
+    <button id="solveBtn">▶ Sort</button>
+    <button id="resetBtn">↺ Reset</button>
+  </div>
+
+  <div class="array-section">
+    <div class="array-title">📊 Array Visualization</div>
+    <div id="arrayContainer" class="array-container"></div>
+  </div>
+
+  <div class="stats-row" id="statsRow">
+    <div class="stat">Comparisons: <span id="compCount">0</span></div>
+    <div class="stat">Swaps: <span id="swapCount">0</span></div>
+    <div class="stat">Depth: <span id="depthCount">0</span></div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><span class="legend-dot normal"></span> unsorted</div>
+    <div class="legend-item"><span class="legend-dot pivot"></span> pivot</div>
+    <div class="legend-item"><span class="legend-dot comparing"></span> comparing</div>
+    <div class="legend-item"><span class="legend-dot sorted"></span> sorted</div>
+  </div>
+
+  <div class="result-section">
+    <div id="status" class="status">Ready · choose array type and sort</div>
+  </div>
+
+  <div class="comparison-row">
+    <div class="algo-card">
+      <h4>🔀 Randomized</h4>
+      <div class="val" id="randComp">—</div>
+      <div class="sub">comparisons</div>
+    </div>
+    <div class="algo-card">
+      <h4>📌 Deterministic (last pivot)</h4>
+      <div class="val" id="detComp">—</div>
+      <div class="sub">comparisons</div>
+    </div>
+    <div class="algo-card">
+      <h4>📊 Improvement</h4>
+      <div class="val" id="improvement">—</div>
+      <div class="sub">vs deterministic</div>
+    </div>
+  </div>
+
+  <div class="footer">Randomized QuickSort · expected O(n log n) · robust against adversarial inputs</div>
+</div>
+
+<script>
+  (function(){
+    const arrayContainer = document.getElementById('arrayContainer');
+    const arraySizeInput = document.getElementById('arraySize');
+    const randomArrayBtn = document.getElementById('randomArrayBtn');
+    const sortedArrayBtn = document.getElementById('sortedArrayBtn');
+    const reverseArrayBtn = document.getElementById('reverseArrayBtn');
+    const solveBtn = document.getElementById('solveBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const statusEl = document.getElementById('status');
+    const compCountEl = document.getElementById('compCount');
+    const swapCountEl = document.getElementById('swapCount');
+    const depthCountEl = document.getElementById('depthCount');
+    const randCompEl = document.getElementById('randComp');
+    const detCompEl = document.getElementById('detComp');
+    const improvementEl = document.getElementById('improvement');
+
+    // ---- state ----
+    let originalArray = [];
+    let currentArray = [];
+    let animationQueue = [];
+    let isAnimating = false;
+    let comparisons = 0;
+    let swaps = 0;
+    let maxDepth = 0;
+
+    // ---- helpers ----
+    function getSize() {
+      let size = parseInt(arraySizeInput.value, 10);
+      if (isNaN(size) || size < 5) size = 5;
+      if (size > 30) size = 30;
+      arraySizeInput.value = size;
+      return size;
+    }
+
+    // ---- generate arrays ----
+    function generateRandom(n) {
+      return Array.from({ length: n }, () => Math.floor(Math.random() * 90) + 10);
+    }
+
+    function generateSorted(n) {
+      const arr = [];
+      let val = 10;
+      for (let i = 0; i < n; i++) {
+        val += Math.floor(Math.random() * 8) + 2;
+        arr.push(val);
+      }
+      return arr;
+    }
+
+    function generateReverse(n) {
+      const sorted = generateSorted(n);
+      return sorted.reverse();
+    }
+
+    // ---- render array as bars ----
+    function renderArray(arr, pivotIdx = -1, compareIndices = [], sortedSet = new Set()) {
+      const maxVal = Math.max(...arr, 100);
+      const containerHeight = 140;
+
+      arrayContainer.innerHTML = arr.map((val, idx) => {
+        const height = Math.max(12, (val / maxVal) * containerHeight);
+        let barClass = 'bar';
+        if (sortedSet.has(idx)) barClass += ' sorted';
+        if (idx === pivotIdx) barClass += ' pivot';
+        if (compareIndices.includes(idx)) barClass += ' comparing';
+
+        return `
+          <div class="bar-wrapper">
+            <div class="${barClass}" style="height: ${height}px;"></div>
+            <div class="bar-label">${val}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ---- update stats ----
+    function updateStats() {
+      compCountEl.textContent = comparisons;
+      swapCountEl.textContent = swaps;
+      depthCountEl.textContent = maxDepth;
+    }
+
+    // ---- reset stats ----
+    function resetStats() {
+      comparisons = 0;
+      swaps = 0;
+      maxDepth = 0;
+      updateStats();
+    }
+
+    // ---- Randomized QuickSort (records steps) ----
+    function randomizedQuickSort(arr) {
+      const steps = [];
+      const a = [...arr];
+      const sortedIndices = new Set();
+      comparisons = 0;
+      swaps = 0;
+      maxDepth = 0;
+
+      function record(action) {
+        steps.push(action);
+      }
+
+      function swap(i, j) {
+        if (i !== j) {
+          const temp = a[i];
+          a[i] = a[j];
+          a[j] = temp;
+          swaps++;
+          record({ type: 'swap', i, j, array: [...a] });
+        }
+      }
+
+      function partition(low, high, depth) {
+        // RANDOM pivot selection
+        const randomIdx = Math.floor(Math.random() * (high - low + 1)) + low;
+        record({ type: 'pivot', idx: randomIdx, array: [...a] });
+        swap(randomIdx, high);
+        const pivot = a[high];
+        let i = low - 1;
+
+        for (let j = low; j < high; j++) {
+          comparisons++;
+          record({ type: 'compare', indices: [j, high], array: [...a], pivotIdx: high });
+          if (a[j] <= pivot) {
+            i++;
+            swap(i, j);
+          }
+        }
+        swap(i + 1, high);
+        record({ type: 'pivot-placed', idx: i + 1, array: [...a] });
+        return i + 1;
+      }
+
+      function quickSort(low, high, depth) {
+        if (depth > maxDepth) maxDepth = depth;
+        if (low < high) {
+          const pi = partition(low, high, depth);
+          sortedIndices.add(pi);
+          record({ type: 'sorted', indices: [...sortedIndices], array: [...a] });
+          quickSort(low, pi - 1, depth + 1);
+          quickSort(pi + 1, high, depth + 1);
+        } else if (low === high) {
+          sortedIndices.add(low);
+          record({ type: 'sorted', indices: [...sortedIndices], array: [...a] });
+        }
+      }
+
+      quickSort(0, a.length - 1, 0);
+      // mark all as sorted at the end
+      for (let i = 0; i < a.length; i++) sortedIndices.add(i);
+      record({ type: 'sorted', indices: [...sortedIndices], array: [...a] });
+      return { steps, sortedArray: a, comparisons, swaps, maxDepth };
+    }
+
+    // ---- Deterministic QuickSort (last element pivot, just for comparison) ----
+    function deterministicQuickSort(arr) {
+      const a = [...arr];
+      let comps = 0;
+
+      function partition(low, high) {
+        const pivot = a[high];
+        let i = low - 1;
+        for (let j = low; j < high; j++) {
+          comps++;
+          if (a[j] <= pivot) {
+            i++;
+            [a[i], a[j]] = [a[j], a[i]];
+          }
+        }
+        [a[i + 1], a[high]] = [a[high], a[i + 1]];
+        return i + 1;
+      }
+
+      function quickSort(low, high) {
+        if (low < high) {
+          const pi = partition(low, high);
+          quickSort(low, pi - 1);
+          quickSort(pi + 1, high);
+        }
+      }
+
+      quickSort(0, a.length - 1);
+      return { sortedArray: a, comparisons: comps };
+    }
+
+    // ---- animate steps ----
+    function animateSteps(steps, finalArray, randComparisons, detComparisons) {
+      if (isAnimating) return;
+      isAnimating = true;
+
+      let stepIdx = 0;
+      const totalSteps = steps.length;
+      const speed = Math.max(1, Math.floor(totalSteps / 80)); // max ~80 frames
+
+      function animate() {
+        if (stepIdx >= totalSteps) {
+          // final render
+          const allSorted = new Set(finalArray.map((_, i) => i));
+          renderArray(finalArray, -1, [], allSorted);
+          isAnimating = false;
+          statusEl.innerHTML = `✅ Sorted! · Randomized: <strong>${randComparisons}</strong> comparisons · Deterministic: <strong>${detComparisons}</strong> comparisons`;
+          
+          // update comparison cards
+          randCompEl.textContent = randComparisons;
+          detCompEl.textContent = detComparisons;
+          if (detComparisons > 0) {
+            const improvement = ((detComparisons - randComparisons) / detComparisons * 100).toFixed(1);
+            improvementEl.textContent = improvement + '%';
+            improvementEl.style.color = improvement > 0 ? '#6fcf97' : '#e57373';
+          } else {
+            improvementEl.textContent = '—';
+          }
+          return;
+        }
+
+        const step = steps[stepIdx];
+        if (step.type === 'compare') {
+          renderArray(step.array, -1, step.indices, new Set());
+        } else if (step.type === 'swap') {
+          renderArray(step.array, -1, [step.i, step.j], new Set());
+        } else if (step.type === 'pivot') {
+          renderArray(step.array, step.idx, [], new Set());
+        } else if (step.type === 'pivot-placed') {
+          renderArray(step.array, step.idx, [], new Set());
+        } else if (step.type === 'sorted') {
+          const sortedSet = new Set(step.indices);
+          renderArray(step.array, -1, [], sortedSet);
+        }
+
+        // update live counters from the algorithm state at this step
+        // We can't easily get live counts from step, so we update at end.
+        // But we can show a rough progress.
+
+        stepIdx += speed;
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+    }
+
+    // ---- solve ----
+    function solve() {
+      if (isAnimating) return;
+      
+      const n = currentArray.length;
+      if (n < 2) {
+        statusEl.innerHTML = 'Array too small to sort.';
+        return;
+      }
+
+      resetStats();
+
+      // Run randomized
+      const randResult = randomizedQuickSort(currentArray);
+      
+      // Run deterministic for comparison
+      const detResult = deterministicQuickSort(currentArray);
+
+      // Update comparison cards immediately
+      randCompEl.textContent = randResult.comparisons;
+      detCompEl.textContent = detResult.comparisons;
+      if (detResult.comparisons > 0) {
+        const improvement = ((detResult.comparisons - randResult.comparisons) / detResult.comparisons * 100).toFixed(1);
+        improvementEl.textContent = improvement + '%';
+        improvementEl.style.color = improvement > 0 ? '#6fcf97' : '#e57373';
+      } else {
+        improvementEl.textContent = '—';
+      }
+
+      statusEl.innerHTML = `Sorting with randomized pivot...`;
+
+      // Set stats to final values
+      comparisons = randResult.comparisons;
+      swaps = randResult.swaps;
+      maxDepth = randResult.maxDepth;
+      updateStats();
+
+      // Animate the randomized steps
+      animateSteps(randResult.steps, randResult.sortedArray, randResult.comparisons, detResult.comparisons);
+    }
+
+    // ---- load array and render ----
+    function loadArray(arr) {
+      originalArray = [...arr];
+      currentArray = [...arr];
+      renderArray(currentArray);
+      resetStats();
+      randCompEl.textContent = '—';
+      detCompEl.textContent = '—';
+      improvementEl.textContent = '—';
+      improvementEl.style.color = '#ffe484';
+    }
+
+    // ---- event listeners ----
+    randomArrayBtn.addEventListener('click', () => {
+      const n = getSize();
+      loadArray(generateRandom(n));
+      statusEl.innerHTML = 'Random array loaded · click Sort';
+    });
+
+    sortedArrayBtn.addEventListener('click', () => {
+      const n = getSize();
+      loadArray(generateSorted(n));
+      statusEl.innerHTML = 'Sorted array loaded · click Sort (randomized pivot helps here!)';
+    });
+
+    reverseArrayBtn.addEventListener('click', () => {
+      const n = getSize();
+      loadArray(generateReverse(n));
+      statusEl.innerHTML = 'Reverse-sorted array loaded · click Sort';
+    });
+
+    solveBtn.addEventListener('click', solve);
+
+    resetBtn.addEventListener('click', () => {
+      const n = getSize();
+      loadArray(generateRandom(n));
+      statusEl.innerHTML = 'Reset · random array loaded';
+    });
+
+    arraySizeInput.addEventListener('change', () => {
+      getSize();
+    });
+
+    // ---- initial load ----
+    (function init() {
+      const n = 12;
+      arraySizeInput.value = n;
+      loadArray(generateRandom(n));
+    })();
+
+  })();
+</script>
+</body>
+</html>

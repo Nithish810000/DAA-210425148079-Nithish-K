@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bin Packing · Approximation Algorithms</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+    }
+    body {
+      background: linear-gradient(145deg, #1b2a32 0%, #0f1a1f 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0;
+      padding: 20px;
+    }
+    .card {
+      background: rgba(22, 34, 40, 0.92);
+      backdrop-filter: blur(8px);
+      border-radius: 2.5rem;
+      padding: 2rem 2.2rem 2rem 2.2rem;
+      box-shadow: 0 25px 40px -10px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(120, 180, 200, 0.2);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 100%;
+      width: fit-content;
+    }
+    h1 {
+      font-weight: 500;
+      font-size: 2rem;
+      letter-spacing: 1.5px;
+      margin: 0 0 0.2rem 0;
+      color: #d8e9f0;
+      text-shadow: 0 2px 5px #00000050;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    h1 span {
+      background: #2f4b5c;
+      padding: 0.2rem 0.9rem;
+      border-radius: 60px;
+      font-size: 1rem;
+      font-weight: 400;
+      color: #b3d9e8;
+      border: 1px solid #3f6a80;
+      letter-spacing: 0.5px;
+    }
+    .subhead {
+      color: #8fb1c2;
+      font-size: 0.9rem;
+      margin-bottom: 1.2rem;
+      letter-spacing: 0.5px;
+      text-align: center;
+    }
+    .control-panel {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 14px;
+      margin: 0.3rem 0 1.2rem 0;
+      background: #1e2e36b3;
+      padding: 0.8rem 1.8rem;
+      border-radius: 60px;
+      border: 1px solid #38515e;
+    }
+    .control-panel label {
+      color: #c2dae6;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+    .control-panel input {
+      width: 80px;
+      padding: 8px 10px;
+      border-radius: 30px;
+      border: 1px solid #385f73;
+      background: #0d1a20;
+      color: #e5f0f5;
+      font-weight: 600;
+      text-align: center;
+      font-size: 0.95rem;
+      outline: none;
+      transition: 0.2s;
+      box-shadow: inset 0 2px 5px #00000055;
+    }
+    .control-panel input:focus {
+      border-color: #5da1c0;
+      box-shadow: 0 0 0 2px #3e7b9650, inset 0 2px 5px #000;
+    }
+    .control-panel button {
+      background: #2e566b;
+      border: none;
+      border-radius: 40px;
+      padding: 9px 20px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      letter-spacing: 0.5px;
+      color: #eef7fc;
+      cursor: pointer;
+      transition: 0.15s;
+      box-shadow: 0 5px 0 #0d1a20, 0 8px 12px #00000040;
+      border: 1px solid #4d7e97;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .control-panel button:hover {
+      background: #3c6d88;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 0 #0d1a20, 0 10px 16px #00000050;
+    }
+    .control-panel button:active {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 #0d1a20, 0 5px 10px #00000040;
+    }
+    .control-panel button.active {
+      background: #4a7e9c;
+      border-color: #7fb5d0;
+      box-shadow: 0 5px 0 #0d1a20, 0 8px 12px #00000040, 0 0 0 2px #6fb0d0;
+    }
+    .items-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 5px 0 12px 0;
+      width: 100%;
+    }
+    .items-title {
+      color: #aac7d6;
+      font-size: 0.9rem;
+      letter-spacing: 0.8px;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    .items-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      background: #0a1419;
+      padding: 14px 18px;
+      border-radius: 24px;
+      box-shadow: inset 0 0 16px #000000, 0 12px 24px -8px black;
+      border: 1px solid #1e3e4b;
+      max-width: 100%;
+      min-height: 70px;
+      align-items: center;
+    }
+    .item-chip {
+      background: #1e3e4b;
+      border: 1px solid #3f6a80;
+      border-radius: 30px;
+      padding: 6px 14px;
+      color: #d8e9f0;
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 3px 0 #0b151b;
+      transition: 0.15s;
+    }
+    .item-chip .weight {
+      color: #ffe484;
+      font-weight: 700;
+      font-size: 1rem;
+    }
+    .item-chip .del {
+      cursor: pointer;
+      color: #a0c0d0;
+      font-weight: 700;
+      font-size: 1.1rem;
+      line-height: 1;
+      margin-left: 2px;
+      transition: 0.1s;
+      opacity: 0.7;
+    }
+    .item-chip .del:hover {
+      color: #ff8a8a;
+      opacity: 1;
+      transform: scale(1.2);
+    }
+    .bins-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px;
+      margin: 16px 0 6px 0;
+      padding: 12px;
+      background: #0d1a20b3;
+      border-radius: 28px;
+      border: 1px solid #1e3e4b;
+      min-height: 120px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .bin {
+      background: #14242c;
+      border-radius: 16px;
+      border: 2px solid #2e566b;
+      padding: 8px 10px 10px 10px;
+      min-width: 100px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 8px 16px -4px #00000080, inset 0 0 0 1px #3f6a8040;
+      transition: 0.2s;
+      flex: 0 0 auto;
+    }
+    .bin.overloaded {
+      border-color: #d45d5d;
+      box-shadow: 0 0 12px #d45d5d80;
+    }
+    .bin-header {
+      font-size: 0.75rem;
+      color: #8fb1c2;
+      font-weight: 600;
+      letter-spacing: 0.6px;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+    }
+    .bin-fill {
+      font-size: 0.7rem;
+      color: #b3d9e8;
+    }
+    .bin-items {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 4px;
+      min-height: 30px;
+      padding: 4px 2px;
+    }
+    .bin-item {
+      background: #2e566b;
+      border-radius: 12px;
+      padding: 3px 8px;
+      color: #f0f9ff;
+      font-weight: 600;
+      font-size: 0.8rem;
+      border: 1px solid #4d7e97;
+      box-shadow: 0 2px 0 #0d1a20;
+    }
+    .bin-bar {
+      width: 100%;
+      height: 6px;
+      background: #0a1419;
+      border-radius: 6px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+    .bin-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #4d9e7a, #6fcf97);
+      border-radius: 6px;
+      transition: width 0.3s;
+    }
+    .bin-bar-fill.over {
+      background: linear-gradient(90deg, #d45d5d, #e57373);
+    }
+    .result-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 10px;
+      width: 100%;
+    }
+    .status {
+      color: #b6d6e8;
+      font-size: 0.95rem;
+      font-weight: 400;
+      letter-spacing: 0.5px;
+      background: #1a2c34;
+      padding: 10px 28px;
+      border-radius: 40px;
+      border: 1px solid #2d4d5e;
+      margin-top: 6px;
+      min-width: 240px;
+      text-align: center;
+      box-shadow: inset 0 4px 8px #00000030;
+      line-height: 1.5;
+    }
+    .status strong {
+      color: #ffe484;
+      font-weight: 600;
+    }
+    .stat-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 18px;
+      margin-top: 8px;
+    }
+    .stat {
+      background: #1a2c34;
+      padding: 6px 16px;
+      border-radius: 40px;
+      border: 1px solid #2d4d5e;
+      color: #cbe2ee;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+    .stat span {
+      color: #ffe484;
+      font-weight: 700;
+    }
+    .input-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-top: 6px;
+    }
+    .input-row input {
+      width: 70px;
+      padding: 7px 8px;
+      border-radius: 30px;
+      border: 1px solid #385f73;
+      background: #0d1a20;
+      color: #e5f0f5;
+      font-weight: 600;
+      text-align: center;
+      font-size: 0.9rem;
+      outline: none;
+    }
+    .input-row button {
+      background: #2e566b;
+      border: none;
+      border-radius: 40px;
+      padding: 7px 16px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: #eef7fc;
+      cursor: pointer;
+      border: 1px solid #4d7e97;
+      box-shadow: 0 4px 0 #0d1a20;
+      transition: 0.15s;
+    }
+    .input-row button:hover {
+      background: #3c6d88;
+      transform: translateY(-1px);
+      box-shadow: 0 5px 0 #0d1a20;
+    }
+    .input-row button:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 #0d1a20;
+    }
+    .footer {
+      color: #5f7f8e;
+      font-size: 0.78rem;
+      margin-top: 16px;
+      letter-spacing: 0.4px;
+      text-align: center;
+    }
+    .algo-badge {
+      font-size: 0.75rem;
+      background: #2a4a5a;
+      padding: 2px 10px;
+      border-radius: 40px;
+      color: #b3d9e8;
+      border: 1px solid #4d7e97;
+      margin-left: 4px;
+    }
+  </style>
+</head>
+<body>
+<div class="card">
+  <h1>📦 Bin Packing <span>approximation</span></h1>
+  <div class="subhead">First Fit Decreasing (FFD) · Best Fit Decreasing (BFD)</div>
+
+  <!-- Items section -->
+  <div class="items-section">
+    <div class="items-title">📋 Items (weight)</div>
+    <div id="itemsGrid" class="items-grid"></div>
+    <div class="input-row">
+      <input type="number" id="itemWeight" min="1" max="100" value="7" step="1" placeholder="weight">
+      <button id="addItemBtn">＋ Add Item</button>
+      <button id="clearItemsBtn">✕ Clear All</button>
+    </div>
+  </div>
+
+  <!-- Algorithm selection & bin capacity -->
+  <div class="control-panel">
+    <label for="binCapacity">Bin capacity:</label>
+    <input type="number" id="binCapacity" min="5" max="100" value="10" step="1">
+    <button id="ffdBtn" class="active">FFD</button>
+    <button id="bfdBtn">BFD</button>
+    <button id="solveBtn">▶ Solve</button>
+    <button id="resetAllBtn">↺ Reset All</button>
+  </div>
+
+  <!-- Bins visualization -->
+  <div id="binsContainer" class="bins-container"></div>
+
+  <!-- Results -->
+  <div class="result-section">
+    <div id="status" class="status">Ready · add items and solve</div>
+    <div id="statRow" class="stat-row"></div>
+  </div>
+
+  <div class="footer">Approximation algorithms · not always optimal but efficient</div>
+</div>
+
+<script>
+  (function(){
+    const itemsGrid = document.getElementById('itemsGrid');
+    const itemWeightInput = document.getElementById('itemWeight');
+    const addItemBtn = document.getElementById('addItemBtn');
+    const clearItemsBtn = document.getElementById('clearItemsBtn');
+    const binCapacityInput = document.getElementById('binCapacity');
+    const ffdBtn = document.getElementById('ffdBtn');
+    const bfdBtn = document.getElementById('bfdBtn');
+    const solveBtn = document.getElementById('solveBtn');
+    const resetAllBtn = document.getElementById('resetAllBtn');
+    const binsContainer = document.getElementById('binsContainer');
+    const statusEl = document.getElementById('status');
+    const statRow = document.getElementById('statRow');
+
+    // ---- state ----
+    let items = [];               // array of weights
+    let currentAlgorithm = 'ffd'; // 'ffd' or 'bfd'
+    let lastBins = null;          // store last result for display
+
+    // ---- helpers ----
+    function getBinCapacity() {
+      let cap = parseInt(binCapacityInput.value, 10);
+      if (isNaN(cap) || cap < 1) cap = 10;
+      if (cap > 100) cap = 100;
+      binCapacityInput.value = cap;
+      return cap;
+    }
+
+    // ---- render items ----
+    function renderItems() {
+      if (items.length === 0) {
+        itemsGrid.innerHTML = '<span style="color:#6d8f9f;font-size:0.9rem;padding:8px 0;">No items yet. Add some!</span>';
+        return;
+      }
+      itemsGrid.innerHTML = items.map((w, idx) => `
+        <div class="item-chip">
+          <span class="weight">${w}</span>
+          <span class="del" data-index="${idx}" title="remove">✕</span>
+        </div>
+      `).join('');
+
+      // attach delete listeners
+      itemsGrid.querySelectorAll('.del').forEach(el => {
+        el.addEventListener('click', (e) => {
+          const idx = parseInt(e.target.dataset.index, 10);
+          items.splice(idx, 1);
+          renderItems();
+          // clear previous bin visualization on item change
+          binsContainer.innerHTML = '';
+          lastBins = null;
+          statusEl.innerHTML = 'Items changed · click Solve';
+          statRow.innerHTML = '';
+        });
+      });
+    }
+
+    // ---- add item ----
+    function addItem() {
+      let w = parseInt(itemWeightInput.value, 10);
+      if (isNaN(w) || w < 1) w = 1;
+      if (w > 100) w = 100;
+      itemWeightInput.value = w;
+      items.push(w);
+      renderItems();
+      // clear previous result
+      binsContainer.innerHTML = '';
+      lastBins = null;
+      statusEl.innerHTML = 'Item added · click Solve';
+      statRow.innerHTML = '';
+    }
+
+    // ---- clear all items ----
+    function clearItems() {
+      items = [];
+      renderItems();
+      binsContainer.innerHTML = '';
+      lastBins = null;
+      statusEl.innerHTML = 'All items cleared';
+      statRow.innerHTML = '';
+    }
+
+    // ---- reset all (items + bins + capacity) ----
+    function resetAll() {
+      items = [];
+      renderItems();
+      binCapacityInput.value = 10;
+      binsContainer.innerHTML = '';
+      lastBins = null;
+      statusEl.innerHTML = 'Reset complete · add items';
+      statRow.innerHTML = '';
+      setAlgorithm('ffd');
+    }
+
+    // ---- set algorithm and highlight button ----
+    function setAlgorithm(algo) {
+      currentAlgorithm = algo;
+      if (algo === 'ffd') {
+        ffdBtn.classList.add('active');
+        bfdBtn.classList.remove('active');
+      } else {
+        bfdBtn.classList.add('active');
+        ffdBtn.classList.remove('active');
+      }
+    }
+
+    // ---- First Fit Decreasing ----
+    function firstFitDecreasing(itemList, capacity) {
+      // sort descending
+      const sorted = [...itemList].sort((a, b) => b - a);
+      const bins = []; // each bin: { items: [], remaining: capacity }
+
+      for (let w of sorted) {
+        let placed = false;
+        for (let bin of bins) {
+          if (bin.remaining >= w) {
+            bin.items.push(w);
+            bin.remaining -= w;
+            placed = true;
+            break;
+          }
+        }
+        if (!placed) {
+          bins.push({ items: [w], remaining: capacity - w });
+        }
+      }
+      return bins;
+    }
+
+    // ---- Best Fit Decreasing ----
+    function bestFitDecreasing(itemList, capacity) {
+      const sorted = [...itemList].sort((a, b) => b - a);
+      const bins = []; // { items: [], remaining: capacity }
+
+      for (let w of sorted) {
+        let bestIdx = -1;
+        let bestRemaining = Infinity;
+
+        for (let i = 0; i < bins.length; i++) {
+          const rem = bins[i].remaining;
+          if (rem >= w && rem < bestRemaining) {
+            bestRemaining = rem;
+            bestIdx = i;
+          }
+        }
+
+        if (bestIdx !== -1) {
+          bins[bestIdx].items.push(w);
+          bins[bestIdx].remaining -= w;
+        } else {
+          bins.push({ items: [w], remaining: capacity - w });
+        }
+      }
+      return bins;
+    }
+
+    // ---- render bins ----
+    function renderBins(bins, capacity) {
+      if (!bins || bins.length === 0) {
+        binsContainer.innerHTML = '<span style="color:#6d8f9f;padding:12px;">No bins to display. Add items and solve.</span>';
+        return;
+      }
+
+      const totalItems = bins.reduce((sum, b) => sum + b.items.length, 0);
+      let html = '';
+      bins.forEach((bin, idx) => {
+        const used = bin.items.reduce((s, w) => s + w, 0);
+        const pct = Math.min(100, (used / capacity) * 100);
+        const over = used > capacity;
+        html += `
+          <div class="bin ${over ? 'overloaded' : ''}">
+            <div class="bin-header">
+              <span>Bin ${idx + 1}</span>
+              <span class="bin-fill">${used}/${capacity}</span>
+            </div>
+            <div class="bin-items">
+              ${bin.items.map(w => `<span class="bin-item">${w}</span>`).join('')}
+            </div>
+            <div class="bin-bar">
+              <div class="bin-bar-fill ${over ? 'over' : ''}" style="width: ${pct}%;"></div>
+            </div>
+          </div>
+        `;
+      });
+      binsContainer.innerHTML = html;
+    }
+
+    // ---- solve ----
+    function solve() {
+      if (items.length === 0) {
+        statusEl.innerHTML = '⚠️ No items to pack. Add some items first.';
+        binsContainer.innerHTML = '';
+        statRow.innerHTML = '';
+        return;
+      }
+
+      const capacity = getBinCapacity();
+      const algo = currentAlgorithm;
+
+      // check for items heavier than capacity
+      const tooHeavy = items.filter(w => w > capacity);
+      if (tooHeavy.length > 0) {
+        statusEl.innerHTML = `⚠️ ${tooHeavy.length} item(s) exceed bin capacity (${capacity}). Cannot pack.`;
+        binsContainer.innerHTML = '';
+        statRow.innerHTML = '';
+        return;
+      }
+
+      // run algorithm
+      let bins;
+      if (algo === 'ffd') {
+        bins = firstFitDecreasing(items, capacity);
+      } else {
+        bins = bestFitDecreasing(items, capacity);
+      }
+
+      lastBins = bins;
+      renderBins(bins, capacity);
+
+      // stats
+      const totalBins = bins.length;
+      const totalWeight = items.reduce((s, w) => s + w, 0);
+      const lowerBound = Math.ceil(totalWeight / capacity);
+      const algoName = algo === 'ffd' ? 'First Fit Decreasing' : 'Best Fit Decreasing';
+
+      statusEl.innerHTML = `✅ ${algoName} · <strong>${totalBins}</strong> bin(s) used`;
+      statRow.innerHTML = `
+        <div class="stat">Items: <span>${items.length}</span></div>
+        <div class="stat">Total weight: <span>${totalWeight}</span></div>
+        <div class="stat">Lower bound: <span>${lowerBound}</span></div>
+        <div class="stat">Bins: <span>${totalBins}</span></div>
+        <div class="stat">Efficiency: <span>${((lowerBound / totalBins) * 100).toFixed(1)}%</span></div>
+      `;
+    }
+
+    // ---- event listeners ----
+    addItemBtn.addEventListener('click', addItem);
+    itemWeightInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') addItem();
+    });
+
+    clearItemsBtn.addEventListener('click', clearItems);
+    resetAllBtn.addEventListener('click', resetAll);
+
+    ffdBtn.addEventListener('click', () => {
+      setAlgorithm('ffd');
+      // clear previous result display
+      binsContainer.innerHTML = '';
+      lastBins = null;
+      statusEl.innerHTML = 'FFD selected · click Solve';
+      statRow.innerHTML = '';
+    });
+
+    bfdBtn.addEventListener('click', () => {
+      setAlgorithm('bfd');
+      binsContainer.innerHTML = '';
+      lastBins = null;
+      statusEl.innerHTML = 'BFD selected · click Solve';
+      statRow.innerHTML = '';
+    });
+
+    solveBtn.addEventListener('click', solve);
+
+    binCapacityInput.addEventListener('change', () => {
+      let cap = parseInt(binCapacityInput.value, 10);
+      if (isNaN(cap) || cap < 1) cap = 10;
+      if (cap > 100) cap = 100;
+      binCapacityInput.value = cap;
+      // clear previous result
+      binsContainer.innerHTML = '';
+      lastBins = null;
+      statusEl.innerHTML = 'Capacity changed · click Solve';
+      statRow.innerHTML = '';
+    });
+
+    // ---- initial demo items ----
+    (function init() {
+      items = [7, 5, 6, 4, 2, 3, 8, 9, 1, 5];
+      renderItems();
+      setAlgorithm('ffd');
+      // auto solve for demo
+      solve();
+    })();
+
+  })();
+</script>
+</body>
+</html>

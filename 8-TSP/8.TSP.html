@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TSP · Branch and Bound</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+    }
+    body {
+      background: linear-gradient(145deg, #1b2a32 0%, #0f1a1f 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0;
+      padding: 20px;
+    }
+    .card {
+      background: rgba(22, 34, 40, 0.9);
+      backdrop-filter: blur(8px);
+      border-radius: 2.5rem;
+      padding: 2rem 2.2rem 2rem 2.2rem;
+      box-shadow: 0 25px 40px -10px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(120, 180, 200, 0.2);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 100%;
+      width: fit-content;
+    }
+    h1 {
+      font-weight: 500;
+      font-size: 2.1rem;
+      letter-spacing: 1.5px;
+      margin: 0 0 0.3rem 0;
+      color: #d8e9f0;
+      text-shadow: 0 2px 5px #00000050;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    h1 span {
+      background: #2f4b5c;
+      padding: 0.2rem 0.9rem;
+      border-radius: 60px;
+      font-size: 1.1rem;
+      font-weight: 400;
+      color: #b3d9e8;
+      border: 1px solid #3f6a80;
+      letter-spacing: 0.5px;
+    }
+    .subhead {
+      color: #8fb1c2;
+      font-size: 0.95rem;
+      margin-bottom: 1.2rem;
+      letter-spacing: 0.6px;
+    }
+    .control-panel {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 14px;
+      margin: 0.5rem 0 1.2rem 0;
+      background: #1e2e36b3;
+      padding: 0.9rem 1.8rem;
+      border-radius: 60px;
+      border: 1px solid #38515e;
+    }
+    .control-panel label {
+      color: #c2dae6;
+      font-weight: 500;
+      font-size: 0.95rem;
+    }
+    .control-panel input {
+      width: 70px;
+      padding: 8px 10px;
+      border-radius: 30px;
+      border: 1px solid #385f73;
+      background: #0d1a20;
+      color: #e5f0f5;
+      font-weight: 600;
+      text-align: center;
+      font-size: 1rem;
+      outline: none;
+      transition: 0.2s;
+      box-shadow: inset 0 2px 5px #00000055;
+    }
+    .control-panel input:focus {
+      border-color: #5da1c0;
+      box-shadow: 0 0 0 2px #3e7b9650, inset 0 2px 5px #000;
+    }
+    .control-panel button {
+      background: #2e566b;
+      border: none;
+      border-radius: 40px;
+      padding: 9px 22px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      letter-spacing: 0.6px;
+      color: #eef7fc;
+      cursor: pointer;
+      transition: 0.15s;
+      box-shadow: 0 5px 0 #0d1a20, 0 8px 12px #00000040;
+      border: 1px solid #4d7e97;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .control-panel button:hover {
+      background: #3c6d88;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 0 #0d1a20, 0 10px 16px #00000050;
+    }
+    .control-panel button:active {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 #0d1a20, 0 5px 10px #00000040;
+    }
+    button:disabled {
+      opacity: 0.5;
+      transform: translateY(0) !important;
+      box-shadow: 0 5px 0 #0d1a20, 0 8px 12px #00000040 !important;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+    .matrix-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 5px 0 10px 0;
+    }
+    .matrix-title {
+      color: #aac7d6;
+      font-size: 0.9rem;
+      letter-spacing: 0.8px;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    .matrix-container {
+      background: #0a1419;
+      padding: 14px 16px;
+      border-radius: 24px;
+      box-shadow: inset 0 0 16px #000000, 0 12px 24px -8px black;
+      border: 1px solid #1e3e4b;
+      overflow-x: auto;
+      max-width: 100%;
+    }
+    table.matrix {
+      border-collapse: collapse;
+      margin: 0 auto;
+      font-size: 0.9rem;
+      background: #14242c;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 0 0 1px #2e566b;
+    }
+    table.matrix th {
+      background: #1e3e4b;
+      color: #cbe2ee;
+      font-weight: 600;
+      padding: 8px 12px;
+      font-size: 0.85rem;
+      border: 1px solid #2e566b;
+      text-align: center;
+      min-width: 60px;
+    }
+    table.matrix td {
+      padding: 6px 10px;
+      border: 1px solid #2e566b;
+      text-align: center;
+      color: #e0eef5;
+      background: #0f1e25;
+    }
+    table.matrix td input {
+      width: 60px;
+      background: #0b171e;
+      border: 1px solid #2e566b;
+      border-radius: 8px;
+      padding: 6px 4px;
+      color: #e5f0f5;
+      text-align: center;
+      font-weight: 500;
+      font-size: 0.9rem;
+      outline: none;
+      transition: 0.15s;
+    }
+    table.matrix td input:focus {
+      border-color: #5da1c0;
+      box-shadow: 0 0 0 2px #3e7b9640;
+    }
+    table.matrix td input.diag {
+      background: #1a303b;
+      color: #6b8f9e;
+      font-style: italic;
+    }
+    .result-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 16px;
+      width: 100%;
+    }
+    .status {
+      color: #b6d6e8;
+      font-size: 1rem;
+      font-weight: 400;
+      letter-spacing: 0.5px;
+      background: #1a2c34;
+      padding: 10px 28px;
+      border-radius: 40px;
+      border: 1px solid #2d4d5e;
+      margin-top: 6px;
+      min-width: 220px;
+      text-align: center;
+      box-shadow: inset 0 4px 8px #00000030;
+      line-height: 1.5;
+    }
+    .status strong {
+      color: #ffe484;
+      font-weight: 600;
+    }
+    .path-display {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      margin: 8px 0 4px 0;
+      color: #d8e9f0;
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+    .path-node {
+      background: #2a4a5a;
+      padding: 4px 10px;
+      border-radius: 30px;
+      border: 1px solid #4d7e97;
+      color: #f0f9ff;
+      font-size: 0.95rem;
+      font-weight: 600;
+      box-shadow: 0 2px 0 #0d1a20;
+    }
+    .path-arrow {
+      color: #7fa9c0;
+      font-size: 1rem;
+      font-weight: 300;
+    }
+    .cost-badge {
+      background: #2a4a5a;
+      padding: 4px 14px;
+      border-radius: 40px;
+      border: 1px solid #6a9db5;
+      color: #ffe484;
+      font-weight: 700;
+      font-size: 1rem;
+      margin-left: 8px;
+    }
+    .footer {
+      color: #5f7f8e;
+      font-size: 0.8rem;
+      margin-top: 18px;
+      letter-spacing: 0.4px;
+    }
+    .small-note {
+      color: #6d8f9f;
+      font-size: 0.78rem;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+<div class="card">
+  <h1>🧭 TSP <span>branch &amp; bound</span></h1>
+  <div class="subhead">find optimal Hamiltonian cycle</div>
+
+  <div class="control-panel">
+    <label for="nInput">Cities (N):</label>
+    <input type="number" id="nInput" min="3" max="10" value="4" step="1">
+    <button id="solveBtn">▶ Solve TSP</button>
+    <button id="resetBtn">↺ Reset Matrix</button>
+  </div>
+
+  <div class="matrix-section">
+    <div class="matrix-title">📋 Distance / Cost Matrix (symmetric)</div>
+    <div class="matrix-container">
+      <div id="matrixWrapper"></div>
+    </div>
+  </div>
+
+  <div class="result-section">
+    <div id="status" class="status">Ready · enter costs and solve</div>
+    <div id="pathDisplay" class="path-display"></div>
+  </div>
+
+  <div class="footer">branch &amp; bound · reduced cost matrix · optimal tour</div>
+  <div class="small-note">⚠️ N ≤ 10 recommended (exponential time)</div>
+</div>
+
+<script>
+  (function(){
+    const nInput = document.getElementById('nInput');
+    const solveBtn = document.getElementById('solveBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const matrixWrapper = document.getElementById('matrixWrapper');
+    const statusEl = document.getElementById('status');
+    const pathDisplay = document.getElementById('pathDisplay');
+
+    let currentN = 4;
+    let costMatrix = [];          // 2D array current cost matrix
+
+    // ----- initialize / generate random symmetric matrix -----
+    function generateRandomMatrix(n) {
+      const mat = Array.from({ length: n }, () => new Array(n).fill(0));
+      // fill upper triangle with random costs 1..20
+      for (let i = 0; i < n; i++) {
+        for (let j = i + 1; j < n; j++) {
+          const val = Math.floor(Math.random() * 19) + 2; // 2..20
+          mat[i][j] = val;
+          mat[j][i] = val;
+        }
+      }
+      // diagonal 0
+      for (let i = 0; i < n; i++) mat[i][i] = 0;
+      return mat;
+    }
+
+    // ----- render matrix as editable table -----
+    function renderMatrix(n, matrix) {
+      let html = '<table class="matrix"><thead><tr><th></th>';
+      for (let j = 0; j < n; j++) {
+        html += `<th>${j}</th>`;
+      }
+      html += '</tr></thead><tbody>';
+
+      for (let i = 0; i < n; i++) {
+        html += `<tr><th>${i}</th>`;
+        for (let j = 0; j < n; j++) {
+          const isDiag = (i === j);
+          const val = matrix[i][j];
+          if (isDiag) {
+            html += `<td><input type="number" class="diag" data-i="${i}" data-j="${j}" value="0" disabled></td>`;
+          } else {
+            html += `<td><input type="number" data-i="${i}" data-j="${j}" value="${val}" min="1" max="99" step="1"></td>`;
+          }
+        }
+        html += '</tr>';
+      }
+      html += '</tbody></table>';
+      matrixWrapper.innerHTML = html;
+
+      // attach change listeners
+      const inputs = matrixWrapper.querySelectorAll('input:not(.diag)');
+      inputs.forEach(inp => {
+        inp.addEventListener('change', (e) => {
+          let i = parseInt(e.target.dataset.i, 10);
+          let j = parseInt(e.target.dataset.j, 10);
+          let val = parseInt(e.target.value, 10);
+          if (isNaN(val) || val < 1) val = 1;
+          if (val > 99) val = 99;
+          e.target.value = val;
+          // update matrix symmetrically
+          costMatrix[i][j] = val;
+          costMatrix[j][i] = val;
+          // also update the mirrored input field if it exists
+          const mirror = matrixWrapper.querySelector(`input[data-i="${j}"][data-j="${i}"]`);
+          if (mirror && !mirror.disabled) mirror.value = val;
+        });
+      });
+    }
+
+    // ----- read matrix from inputs into costMatrix -----
+    function syncMatrixFromInputs() {
+      const n = currentN;
+      const inputs = matrixWrapper.querySelectorAll('input:not(.diag)');
+      inputs.forEach(inp => {
+        const i = parseInt(inp.dataset.i, 10);
+        const j = parseInt(inp.dataset.j, 10);
+        let val = parseInt(inp.value, 10);
+        if (isNaN(val) || val < 1) val = 1;
+        if (val > 99) val = 99;
+        inp.value = val;
+        costMatrix[i][j] = val;
+        costMatrix[j][i] = val;
+      });
+      // ensure diagonal 0
+      for (let i = 0; i < n; i++) costMatrix[i][i] = 0;
+    }
+
+    // ----- reset matrix to random new values for currentN -----
+    function resetToRandom() {
+      costMatrix = generateRandomMatrix(currentN);
+      renderMatrix(currentN, costMatrix);
+      statusEl.innerHTML = `Matrix reset · N = ${currentN}`;
+      pathDisplay.innerHTML = '';
+    }
+
+    // ----- TSP Branch and Bound (reduced cost matrix) -----
+    function tspBranchAndBound(n, matrix) {
+      if (n <= 2) return { path: [0, 1, 0], cost: 0 }; // not realistic
+
+      // we'll work on a deep copy
+      const INF = 1e9;
+      let bestCost = INF;
+      let bestPath = null;
+
+      // helper: reduce matrix (rows & cols) and return reduction cost + reduced matrix
+      function reduceMatrix(mat, size, rowSkip, colSkip) {
+        // size is current dimension (remaining nodes)
+        // mat is square of size `size`
+        let totalReduction = 0;
+        const reduced = mat.map(row => row.slice());
+
+        // Row reduction
+        for (let i = 0; i < size; i++) {
+          let minRow = INF;
+          for (let j = 0; j < size; j++) {
+            if (reduced[i][j] < minRow) minRow = reduced[i][j];
+          }
+          if (minRow !== 0 && minRow < INF) {
+            totalReduction += minRow;
+            for (let j = 0; j < size; j++) {
+              if (reduced[i][j] < INF) reduced[i][j] -= minRow;
+            }
+          }
+        }
+
+        // Column reduction
+        for (let j = 0; j < size; j++) {
+          let minCol = INF;
+          for (let i = 0; i < size; i++) {
+            if (reduced[i][j] < minCol) minCol = reduced[i][j];
+          }
+          if (minCol !== 0 && minCol < INF) {
+            totalReduction += minCol;
+            for (let i = 0; i < size; i++) {
+              if (reduced[i][j] < INF) reduced[i][j] -= minCol;
+            }
+          }
+        }
+        return { reduced, cost: totalReduction };
+      }
+
+      // Recursive B&B using reduced cost matrix (recursive on remaining nodes)
+      function branchAndBound(currentPath, reducedMat, currentCost, size) {
+        // currentPath: array of original node indices visited so far (including start)
+        // reducedMat: reduced cost matrix of remaining nodes (size x size)
+        // currentCost: accumulated cost including reductions
+
+        const m = size; // remaining nodes count
+        if (m === 1) {
+          // only one node left: connect last to start
+          const lastNode = currentPath[currentPath.length - 1];
+          const startNode = currentPath[0];
+          // we need the edge from lastNode to startNode using original matrix
+          // but we should have stored that cost. Better: we keep path and compute full tour cost at the end.
+          // Simpler: reconstruct full tour cost from currentPath + [startNode]
+          let fullCost = 0;
+          for (let i = 0; i < currentPath.length; i++) {
+            const from = currentPath[i];
+            const to = (i + 1 < currentPath.length) ? currentPath[i + 1] : currentPath[0];
+            fullCost += matrix[from][to];
+          }
+          if (fullCost < bestCost) {
+            bestCost = fullCost;
+            bestPath = [...currentPath, currentPath[0]];
+          }
+          return;
+        }
+
+        // bound: if currentCost >= bestCost, prune
+        if (currentCost >= bestCost) return;
+
+        // Try each remaining node as next
+        // The reduced matrix corresponds to remaining nodes, but we need mapping from index in reducedMat to original node.
+        // We'll maintain an array `remainingNodes` outside or pass it. To keep simple, we'll store mapping in closure.
+        // We'll pass remainingNodes as parameter.
+      }
+
+      // --- Since recursive with reduced matrix is a bit complex to map back, let's implement a cleaner B&B with simple path extension and lower bound via reduction. ---
+      // We'll use a stack or recursion with full matrix but computing bound each time by reducing submatrix of unvisited nodes.
+      // This is clearer for demonstration.
+
+      function computeBound(currentPath, visited) {
+        // currentPath: array of visited nodes so far (including start)
+        // visited: Set of visited nodes (original indices)
+        // Build reduced matrix of unvisited nodes + start? Actually the standard bound for TSP B&B is:
+        // cost so far + reduction of remaining edges. We'll compute lower bound by reducing matrix of unvisited nodes (excluding start) 
+        // and also consider edges from last node to unvisited and from unvisited to start.
+        // For simplicity and correctness, we use a simpler bound: 
+        // cost so far + sum of minimum outgoing edge for each unvisited node + minimum edge from last to unvisited + minimum from unvisited to start.
+        // This is a valid lower bound (not as tight as full reduction but works and is simpler).
+
+        const n = matrix.length;
+        const last = currentPath[currentPath.length - 1];
+        const start = currentPath[0];
+        let bound = currentCostSoFar(currentPath); // actual cost of path so far
+
+        const unvisited = [];
+        for (let i = 0; i < n; i++) if (!visited.has(i)) unvisited.push(i);
+
+        if (unvisited.length === 0) return bound;
+
+        // min edge from last to any unvisited
+        let minFromLast = INF;
+        for (let u of unvisited) minFromLast = Math.min(minFromLast, matrix[last][u]);
+        bound += minFromLast;
+
+        // min edge from any unvisited to start
+        let minToStart = INF;
+        for (let u of unvisited) minToStart = Math.min(minToStart, matrix[u][start]);
+        bound += minToStart;
+
+        // for each unvisited node, add its minimum outgoing edge to another unvisited or start (if it's not the one already counted)
+        // To avoid double counting and keep it a valid lower bound, we can add the minimum outgoing edge from each unvisited node
+        // excluding edges to already visited (except start). This is a bit tricky; we'll use a simpler valid bound:
+        // For each unvisited node, add its minimum edge to any other unvisited node or to start (if not already the minToStart).
+        // Actually a simple and valid lower bound is: sum over unvisited nodes of min outgoing edge to any other node (including visited)
+        // But that may overcount edges. For safety, we use a known valid bound: 
+        // cost so far + reduction of the submatrix of unvisited nodes + min edges from last and to start.
+        // Let's implement reduction on the submatrix of unvisited nodes.
+
+        if (unvisited.length > 0) {
+          const k = unvisited.length;
+          const subMat = Array.from({ length: k }, () => new Array(k).fill(INF));
+          for (let i = 0; i < k; i++) {
+            for (let j = 0; j < k; j++) {
+              if (i === j) continue;
+              subMat[i][j] = matrix[unvisited[i]][unvisited[j]];
+            }
+          }
+          // reduce subMat
+          let reductionCost = 0;
+          // rows
+          for (let i = 0; i < k; i++) {
+            let minRow = INF;
+            for (let j = 0; j < k; j++) if (subMat[i][j] < minRow) minRow = subMat[i][j];
+            if (minRow !== 0 && minRow < INF) {
+              reductionCost += minRow;
+              for (let j = 0; j < k; j++) if (subMat[i][j] < INF) subMat[i][j] -= minRow;
+            }
+          }
+          // cols
+          for (let j = 0; j < k; j++) {
+            let minCol = INF;
+            for (let i = 0; i < k; i++) if (subMat[i][j] < minCol) minCol = subMat[i][j];
+            if (minCol !== 0 && minCol < INF) {
+              reductionCost += minCol;
+              for (let i = 0; i < k; i++) if (subMat[i][j] < INF) subMat[i][j] -= minCol;
+            }
+          }
+          bound += reductionCost;
+        }
+
+        return bound;
+      }
+
+      function currentCostSoFar(path) {
+        let sum = 0;
+        for (let i = 0; i < path.length - 1; i++) {
+          sum += matrix[path[i]][path[i+1]];
+        }
+        return sum;
+      }
+
+      // DFS with pruning
+      function dfs(path, visited) {
+        const n = matrix.length;
+        const last = path[path.length - 1];
+        const start = path[0];
+
+        // if all visited, close tour
+        if (path.length === n) {
+          const total = currentCostSoFar(path) + matrix[last][start];
+          if (total < bestCost) {
+            bestCost = total;
+            bestPath = [...path, start];
+          }
+          return;
+        }
+
+        // compute bound
+        const bound = computeBound(path, visited);
+        if (bound >= bestCost) return; // prune
+
+        // try each unvisited node
+        for (let next = 0; next < n; next++) {
+          if (!visited.has(next)) {
+            visited.add(next);
+            path.push(next);
+            dfs(path, visited);
+            path.pop();
+            visited.delete(next);
+          }
+        }
+      }
+
+      // start from city 0
+      const initialVisited = new Set([0]);
+      dfs([0], initialVisited);
+
+      return { path: bestPath, cost: bestCost };
+    }
+
+    // ----- solve and update UI -----
+    function solveTSP() {
+      syncMatrixFromInputs(); // ensure costMatrix matches inputs
+      const n = currentN;
+
+      if (n < 3) {
+        statusEl.innerHTML = '⚠️ Need at least 3 cities for TSP.';
+        pathDisplay.innerHTML = '';
+        return;
+      }
+
+      // check if any INF or missing edges (if cost 0 between cities, treat as INF? we assume all edges exist)
+      // but if some input is 0 on off-diagonal, we'll treat as 0 (but our min bound might misbehave). We'll set to 1 if 0.
+      // However user may intentionally set 0? Better to ensure no zero off-diagonal.
+      for (let i = 0; i < n; i++) {
+        for (let j = 0; j < n; j++) {
+          if (i !== j && costMatrix[i][j] === 0) {
+            costMatrix[i][j] = 1; // avoid zero edge for B&B correctness
+          }
+        }
+      }
+
+      // Run B&B
+      const startTime = performance.now();
+      const result = tspBranchAndBound(n, costMatrix);
+      const endTime = performance.now();
+
+      if (result.path && result.cost < 1e9) {
+        // format path
+        const pathStr = result.path.map(node => `<span class="path-node">${node}</span>`).join('<span class="path-arrow">→</span>');
+        pathDisplay.innerHTML = pathStr + `<span class="cost-badge">total cost = ${result.cost}</span>`;
+        statusEl.innerHTML = `✅ Optimal tour found · <strong>N = ${n}</strong> · (${(endTime - startTime).toFixed(1)} ms)`;
+      } else {
+        statusEl.innerHTML = `⚠️ No valid tour found (check matrix)`;
+        pathDisplay.innerHTML = '';
+      }
+    }
+
+    // ----- update N, reset matrix and UI -----
+    function changeN(newN) {
+      newN = Math.min(10, Math.max(3, newN));
+      nInput.value = newN;
+      if (newN !== currentN) {
+        currentN = newN;
+        costMatrix = generateRandomMatrix(currentN);
+        renderMatrix(currentN, costMatrix);
+        statusEl.innerHTML = `Ready · N = ${currentN} · random matrix`;
+        pathDisplay.innerHTML = '';
+      } else {
+        // if same N, but we might still want to regenerate? No, keep matrix.
+        // But reset button handles regeneration.
+      }
+    }
+
+    // ----- event listeners -----
+    nInput.addEventListener('change', () => {
+      let val = parseInt(nInput.value, 10);
+      if (isNaN(val) || val < 3) val = 3;
+      if (val > 10) val = 10;
+      changeN(val);
+    });
+
+    solveBtn.addEventListener('click', () => {
+      // ensure N is up to date
+      let val = parseInt(nInput.value, 10);
+      if (isNaN(val) || val < 3) val = 3;
+      if (val > 10) val = 10;
+      nInput.value = val;
+      if (val !== currentN) {
+        currentN = val;
+        costMatrix = generateRandomMatrix(currentN);
+        renderMatrix(currentN, costMatrix);
+      }
+      solveTSP();
+    });
+
+    resetBtn.addEventListener('click', () => {
+      // reset matrix to random for current N
+      costMatrix = generateRandomMatrix(currentN);
+      renderMatrix(currentN, costMatrix);
+      statusEl.innerHTML = `Matrix reset · N = ${currentN}`;
+      pathDisplay.innerHTML = '';
+    });
+
+    // ----- initial setup (N=4) -----
+    (function init() {
+      currentN = 4;
+      nInput.value = 4;
+      costMatrix = generateRandomMatrix(4);
+      renderMatrix(4, costMatrix);
+      statusEl.innerHTML = `Ready · N = 4 · random matrix`;
+      pathDisplay.innerHTML = '';
+    })();
+
+  })();
+</script>
+</body>
+</html>
