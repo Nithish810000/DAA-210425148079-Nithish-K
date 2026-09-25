@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>N-Queens · Backtracking Visualizer</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+    }
+    body {
+      background: linear-gradient(145deg, #1b2a32 0%, #0f1a1f 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0;
+      padding: 16px;
+    }
+    .card {
+      background: rgba(22, 34, 40, 0.85);
+      backdrop-filter: blur(6px);
+      border-radius: 2.5rem;
+      padding: 2rem 2rem 2rem 2rem;
+      box-shadow: 0 25px 40px -10px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(120, 180, 200, 0.2);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: fit-content;
+      max-width: 100%;
+    }
+    h1 {
+      font-weight: 500;
+      font-size: 2.2rem;
+      letter-spacing: 2px;
+      margin: 0 0 0.25rem 0;
+      color: #d8e9f0;
+      text-shadow: 0 2px 5px #00000050;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    h1 span {
+      background: #2f4b5c;
+      padding: 0.2rem 0.9rem;
+      border-radius: 60px;
+      font-size: 1.3rem;
+      font-weight: 400;
+      color: #b3d9e8;
+      border: 1px solid #3f6a80;
+    }
+    .control-panel {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 18px;
+      margin: 1.2rem 0 1.5rem 0;
+      background: #1e2e36b3;
+      padding: 0.8rem 1.8rem;
+      border-radius: 60px;
+      border: 1px solid #38515e;
+    }
+    .control-panel label {
+      color: #c2dae6;
+      font-weight: 500;
+      font-size: 1rem;
+      letter-spacing: 0.3px;
+    }
+    .control-panel input {
+      width: 75px;
+      padding: 8px 10px;
+      border-radius: 30px;
+      border: 1px solid #385f73;
+      background: #0d1a20;
+      color: #e5f0f5;
+      font-weight: 600;
+      text-align: center;
+      font-size: 1.1rem;
+      outline: none;
+      transition: 0.2s;
+      box-shadow: inset 0 2px 5px #00000055;
+    }
+    .control-panel input:focus {
+      border-color: #5da1c0;
+      box-shadow: 0 0 0 2px #3e7b9650, inset 0 2px 5px #000;
+    }
+    .control-panel button {
+      background: #2e566b;
+      border: none;
+      border-radius: 40px;
+      padding: 10px 24px;
+      font-weight: 600;
+      font-size: 1rem;
+      letter-spacing: 0.8px;
+      color: #eef7fc;
+      cursor: pointer;
+      transition: 0.15s;
+      box-shadow: 0 6px 0 #0d1a20, 0 8px 12px #00000040;
+      border: 1px solid #4d7e97;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .control-panel button:hover {
+      background: #3c6d88;
+      transform: translateY(-1px);
+      box-shadow: 0 7px 0 #0d1a20, 0 10px 16px #00000050;
+    }
+    .control-panel button:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 #0d1a20, 0 5px 10px #00000040;
+    }
+    .board-container {
+      background: #0a1419;
+      padding: 12px;
+      border-radius: 28px;
+      box-shadow: inset 0 0 20px #000000, 0 20px 30px -8px black;
+      margin: 5px 0 10px 0;
+    }
+    .board {
+      display: grid;
+      gap: 3px;
+      background: #152b35;
+      padding: 6px;
+      border-radius: 18px;
+      box-shadow: 0 0 0 2px #1e3e4b;
+      width: fit-content;
+      margin: 0 auto;
+    }
+    .cell {
+      width: 58px;
+      height: 58px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.1rem;
+      font-weight: 600;
+      transition: background 0.1s, box-shadow 0.1s;
+      user-select: none;
+      background: #1e3540;
+      box-shadow: inset 0 -2px 0 #0b151b, inset 0 2px 5px #ffffff08;
+    }
+    .cell.light {
+      background: #2d4d5e;
+    }
+    .cell.dark {
+      background: #1e3540;
+    }
+    .cell.queen {
+      color: #f5e56b;
+      text-shadow: 0 0 12px #ffd966, 0 0 4px #ffb347;
+      font-size: 2.5rem;
+      line-height: 1;
+      transform: scale(1.05);
+    }
+    .cell.queen::before {
+      content: "♛";
+      filter: drop-shadow(0 2px 4px black);
+    }
+    .status {
+      color: #b6d6e8;
+      font-size: 1.1rem;
+      font-weight: 400;
+      letter-spacing: 0.6px;
+      background: #1a2c34;
+      padding: 8px 26px;
+      border-radius: 40px;
+      border: 1px solid #2d4d5e;
+      margin-top: 10px;
+      min-width: 200px;
+      text-align: center;
+      box-shadow: inset 0 4px 8px #00000030;
+    }
+    .status strong {
+      color: #ffe484;
+      font-weight: 600;
+    }
+    .footer {
+      color: #6b8f9e;
+      font-size: 0.85rem;
+      margin-top: 12px;
+      letter-spacing: 0.4px;
+    }
+  </style>
+</head>
+<body>
+<div class="card">
+  <h1>♕ N-Queens <span>backtracking</span></h1>
+
+  <div class="control-panel">
+    <label for="nInput">N =</label>
+    <input type="number" id="nInput" min="1" max="12" value="6" step="1">
+    <button id="solveBtn">▶ Solve</button>
+    <button id="clearBtn">↺ Reset</button>
+  </div>
+
+  <div class="board-container">
+    <div id="board" class="board"></div>
+  </div>
+
+  <div id="status" class="status">Ready · choose N and solve</div>
+  <div class="footer">backtracking · one solution</div>
+</div>
+
+<script>
+  (function(){
+    const boardEl = document.getElementById('board');
+    const nInput = document.getElementById('nInput');
+    const solveBtn = document.getElementById('solveBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const statusEl = document.getElementById('status');
+
+    let currentN = 6;          // default
+    let currentSolution = null;
+
+    // ----- helper: render board from solution array (array of column indices per row) -----
+    function renderBoard(n, solution) {
+      boardEl.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
+      boardEl.innerHTML = '';
+
+      for (let r = 0; r < n; r++) {
+        for (let c = 0; c < n; c++) {
+          const cell = document.createElement('div');
+          // chess coloring: (r + c) even => light, odd => dark (but we style as light/dark)
+          const isLight = (r + c) % 2 === 0;
+          cell.className = `cell ${isLight ? 'light' : 'dark'}`;
+          
+          // if solution exists and this cell has a queen
+          if (solution && solution[r] === c) {
+            cell.classList.add('queen');
+          }
+          boardEl.appendChild(cell);
+        }
+      }
+    }
+
+    // ----- clear board (empty n x n) -----
+    function clearBoard(n) {
+      currentSolution = null;
+      renderBoard(n, null);
+      statusEl.innerHTML = `Board cleared · N = ${n}`;
+    }
+
+    // ----- N-Queens backtracking solver (returns first solution or null) -----
+    function solveNQueens(n) {
+      // board representation: array of length n, board[row] = column of queen
+      const board = new Array(n).fill(-1);
+      
+      // quick check for n=2,3 no solution, but we still let algorithm try
+      // also n=1 works.
+      
+      // Helper: check if placing queen at (row, col) is safe
+      function isSafe(row, col) {
+        for (let prevRow = 0; prevRow < row; prevRow++) {
+          const prevCol = board[prevRow];
+          // same column
+          if (prevCol === col) return false;
+          // diagonal difference
+          if (Math.abs(prevCol - col) === Math.abs(prevRow - row)) return false;
+        }
+        return true;
+      }
+
+      // Recursive backtracking
+      function backtrack(row) {
+        // all queens placed
+        if (row === n) return true;   
+        
+        // try each column
+        for (let col = 0; col < n; col++) {
+          if (isSafe(row, col)) {
+            board[row] = col;           // place queen
+            if (backtrack(row + 1)) {   // recurse
+              return true;              // solution found
+            }
+            board[row] = -1;            // backtrack (remove queen)
+          }
+        }
+        return false;                   // no solution in this branch
+      }
+
+      const found = backtrack(0);
+      return found ? board.slice() : null;   // return copy of board
+    }
+
+    // ----- solve & update UI -----
+    function solveAndDisplay() {
+      const n = currentN;   // use stored n (validated)
+      
+      // run backtracking
+      const solution = solveNQueens(n);
+      
+      if (solution) {
+        currentSolution = solution;
+        renderBoard(n, solution);
+        statusEl.innerHTML = `✅ Solution found for <strong>N = ${n}</strong> · <span style="color:#b3d9e8">backtracking</span>`;
+      } else {
+        currentSolution = null;
+        renderBoard(n, null);   // empty board (no queens)
+        statusEl.innerHTML = `⚠️ No solution for <strong>N = ${n}</strong> (try another N)`;
+      }
+    }
+
+    // ----- read & validate N from input, update UI -----
+    function updateNFromInput() {
+      let val = parseInt(nInput.value, 10);
+      // handle NaN or out-of-range
+      if (isNaN(val) || val < 1) val = 1;
+      if (val > 12) val = 12;        // cap at 12 for UI sanity (performance & size)
+      
+      // update input field to reflect clamped value
+      nInput.value = val;
+      
+      // if N changed, reset board to empty of new size and clear solution
+      if (val !== currentN) {
+        currentN = val;
+        currentSolution = null;
+        renderBoard(currentN, null);
+        statusEl.innerHTML = `Board reset · N = ${currentN}`;
+      } else {
+        // even if same N, if currentSolution exists, keep board? but we want consistency.
+        // when user clicks solve, we'll overwrite. No action needed here.
+        // if user changes input but value same, do nothing.
+      }
+    }
+
+    // ----- event listeners -----
+    solveBtn.addEventListener('click', () => {
+      // first validate & update N (clamps input)
+      let val = parseInt(nInput.value, 10);
+      if (isNaN(val) || val < 1) val = 1;
+      if (val > 12) val = 12;
+      nInput.value = val;
+      
+      // if N changed, update currentN and reset board
+      if (val !== currentN) {
+        currentN = val;
+        currentSolution = null;
+        renderBoard(currentN, null);
+      }
+      
+      // now solve for currentN
+      solveAndDisplay();
+    });
+
+    clearBtn.addEventListener('click', () => {
+      // reset board (empty) and reset status, keep current N
+      currentSolution = null;
+      renderBoard(currentN, null);
+      statusEl.innerHTML = `Board reset · N = ${currentN}`;
+      // also set input to currentN (in case it was out of sync)
+      nInput.value = currentN;
+    });
+
+    // when input changes (blur or enter) we clamp, but don't auto-solve
+    nInput.addEventListener('change', () => {
+      updateNFromInput();
+    });
+
+    // also if user hits enter on input, blur to trigger change, but we don't auto-solve
+    nInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        nInput.blur();  // triggers change
+      }
+    });
+
+    // ----- initial render (N=6 empty board) -----
+    (function init() {
+      currentN = 6;
+      nInput.value = 6;
+      currentSolution = null;
+      renderBoard(6, null);
+      statusEl.innerHTML = `Ready · N = 6`;
+    })();
+
+  })();
+</script>
+</body>
+</html>
